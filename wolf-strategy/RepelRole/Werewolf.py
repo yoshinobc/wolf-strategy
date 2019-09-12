@@ -2,8 +2,8 @@ class Werewolf(Villager):
     def __init__(self, agent_name):
         super().__init__(agent_name)
 
-    def initialize(self, base_info, diff_data, game_setting):
-        super().initialize(self, base_info, diff_data, game_setting)
+    def initialize(self, base_info, diff_data, game_setting, myrole):
+        super().initialize(self, base_info, diff_data, game_setting, myrole)
 
     def update_talk_divine(content):
         # DIVINEDで自分を村人側ってするってことは仲間だから
