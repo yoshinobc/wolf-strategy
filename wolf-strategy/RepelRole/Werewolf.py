@@ -2,6 +2,9 @@ class Werewolf(Villager):
     def __init__(self, agent_name):
         super().__init__(agent_name)
 
+    def initialize(self, base_info, diff_data, game_setting):
+        super().initialize(self, base_info, diff_data, game_setting)
+
     def update_talk_divine(content):
         # DIVINEDで自分を村人側ってするってことは仲間だから
         if content[0] == "DIVINED" and content[1] == self.agentIdx and (content[2] == "VILLAGER" or content[2] == "SEER")　and self.mode == agent:
@@ -40,3 +43,8 @@ class Werewolf(Villager):
                 return cb.REQUEST(o, "VOTE", self.mode + 1)
             elif self.talkCount <= 10:
                 # INQUIREをつけるか
+
+    def attack(self):
+        if self.mode == -1:
+            return self.voteIdxRandom
+        return self.mode
