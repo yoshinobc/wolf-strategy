@@ -1,245 +1,99 @@
-import random
-from collections import deque
-from utils import splitText
+#!/usr/bin/env python
+from __future__ import print_function, division
 
-#SEER, POSSESSEDはmodeを敵の占いCOにpriorityする
-# updateのtalk以外の処理
+# this is main script
+# simple version
+
+import aiwolfpy
+import aiwolfpy.contentbuilder as cb
+
+myname = 'REPEL'
 
 
-class Villager(object):
+class Repel(object):
+
     def __init__(self, agent_name):
-        super().__init__(agent_name)
+        # myname
+        self.myname = agent_name
 
     def getName(self):
         return self.myname
 
-    def initialize(self, base_info, diff_data, game_setting, myrole):
+    def initialize(self, base_info, diff_data, game_setting):
         self.base_info = base_info
+        # game_setting
         self.game_setting = game_setting
-        self.playerNum = len(self.base_info["remainTalkMap"].keys())
-        self.myrole = myrole
-        self.mode = -1
-        self.repelTargetQue = deque([])
-        self.AGREESentenceQue = deque([])
-        self.DISAGREESentenceQue = deque([])
-        self.RequestQue = deque([])
-        self.WolfEstimateFlag = False
-        self.day = 0
-        self.agentIdx = self.base_info["agentIdx"]
-
-    def update_talk_repel(content):
-        if (content[0] == "VOTE" and content[1] == self.agentIdx) or (content[0] == "ESTIMATE" and (content[2] == "WEREWOLF" or content[2] == "POSSESSED")):
-            self.repelTargetQue.append(agent)
-
-    def update_talk_agreedisagree(content):
-        if content[0] == "ESTIMATE" and content[1] == self.mode:
-            if content[2] == "WEREWOLF" or content[2] == "POSSESSED":
-                self.AGREESentenceQue.append(row["idx"])
-            else:
-                self.DISAGREESentenceQue.append(row["idx"])
-
-    def update_talk_request(content):
-        if content[0] == "REQUEST":
-            if agnet != self.mode and content[1] == self.agentIdx:
-                requestContent = splitText(content[2])
-                # 相手からのリクエストにどれぐらい答えるか
-
-    def update_talk(self, row):
-        text, agent = row["text"], row["agent"]
-        content = splitText(text)
-        update_talk_repel(content)
-        update_talk_agreedisagree(content)
-        update_talk_request(content)
-        if self.myrole == "WEREWOLF":
-            update_talk_divine(content)
+        # print(base_info)
+        # print(diff_data)
+        self.role = Villager(self.myname)
 
     def update(self, base_info, diff_data, request):
-        if len(self.repelTargetQue) == 0:
-            self.mode = -1
-        else:
-            self.mode = self.repelTargetQue[0]
-        for row in self.diff_data.iterrows():
-            if row["type"] == "talk":
-                update_talk(self, row)
+        self.base_info = base_info
+        try:
+            self.role.update(base_info, diff_data, request)
+        except Exception:
+            print("error update")
+            pass
+        # print(base_info)
+        # print(diff_data)
 
     def dayStart(self):
-        self.talkCount = 0
-        self.day += 1
+        try:
+            self.role.dayStart(base_info, diff_data, request)
+        except Exception:
+            print("error dayStart")
+            pass
 
     def talk(self):
-        if self.talkCount == 0 and self.day == 1:
-            self.talkCount += 1
-            return cb.COMINGOUT(self.agentIdx, "VILLAGER")
-        elif self.talkCount <= 1:
-            self.talkCount += 1
-            if self.mode == -1:
-                self.voteIdxRandom = random.randint(0, self.playerNum) + 1
-                return cb.VOTE(self.voteIdxRandom)
-            else:
-                return cb.VOTE(self.mode + 1)
-        elif self.talkCount <= 2:
-            self.talkCount += 1
-            return cb.BECAUSE(cb.ESTIMATE(self.mode + 1, "WEREWOLF"))
-        elif self.talkCount <= 6 and len(self.AGREESentenceQue) >= 1:
-            self.talkCount += 1
-            AGREEText = self.AGREESentenceQue.pop()
-            return cb.AGREE(AGREEText)
-        elif self.talkCount <= 9 and len(self.DISAGREESentenceQue) >= 1:
-            DISAGREEText = self.DISAGREESentenceQue.pop()
-            self.talkCount += 1
-            return cb.DISAGREE(DISAGREEText)
-        elif self.talkCount <= 9:
-            self.talkCount += 1
-            return cb.REQUEST(o, "VOTE", self.mode + 1)
-        elif self.talkCount <= 10:
-            # INQUIREをつけるか
+        try:
+            return self.role.talk()
+        except Exception:
+            print("error talk")
+            return cb.over()
 
-        self.talkCount += 1
-        return cb.skip()
+    def whisper(self):
+        try:
+            return self.role.whisper()
+        except Exception:
+            print("error whisper")
+            return cb.over()
 
     def vote(self):
-        if self.mode == -1:
-            return self.voteIdxRandom
-        return self.mode
+        try:
+            return self.role.vote()
+        except Exception:
+            print("error vote")
+        return 1
 
-    def finish(self):
-        return None
-
-
-class Seer(Villager):
-    def __init__(self, agent_name):
-        super().__init__(agent_name)
-
-    def update_talk_request(content):
-        content[0] == "REQUEST":
-        if agent != self.mode and content[1] == self.agentIdx:
-            requestContent = splitText(content[2])
-            if requestContent[0] == "DIVINED" or requestContent[0] == "VOTE":
-                self.DISAGREESentenceQue.append(row["idx"])
-
-    def update(self, base_info, diff_data, request):
-        super().update(self, base_info, diff_data, request)
-
-    def talk(self):
-        elif self.myrole == "SEER":
-            if self.talkCount == 0 and self.day == 1:
-                self.talkCount += 1
-                return cb.COMINGOUT(self.agentIdx, "SEER")
-            elif self.talkCount <= 1:
-                self.talkCount += 1
-                if self.mode == -1:
-                    self.voteIdxRandom = random.randint(0, self.playerNum) + 1
-                    return cb.VOTE(self.voteIdxRandom)
-                else:
-                    return cb.VOTE(self.mode + 1)
-            elif self.talkCount <= 2:
-                self.talkCount += 1
-                return cb.BECAUSE(cb.ESTIMATE(self.mode + 1, "WEREWOLF"))
-            elif self.talkCount <= 6 and len(self.AGREESentenceQue) >= 1:
-                self.talkCount += 1
-                AGREEText = self.AGREESentenceQue.pop()
-                return cb.AGREE(AGREEText)
-            elif self.talkCount <= 9 and len(self.DISAGREESentenceQue) >= 1:
-                DISAGREEText = self.DISAGREESentenceQue.pop()
-                self.talkCount += 1
-                return cb.DISAGREE(DISAGREEText)
-            elif self.talkCount <= 9:
-                self.talkCount += 1
-                # randomの仕方に無駄がある
-                return cb.REQUEST(random.randint(0, self.playerNum) + 1, "VOTE", self.mode + 1)
-            elif self.talkCount <= 10:
-                if self.mode != -1:
-                    return cb.DIVINED(self.mode + 1, "WEREWOLF")
-
-    def vote(self):
-        return super().vote()
+    def attack(self):
+        try:
+            return self.role.attack()
+        except Exception:
+            print("error attack")
+            return 1
 
     def divine(self):
-        if self.mode == -1:
-            return random.randint(0, self.playerNum)
-        return self.mode + 1
+        try:
+            return self.role.divine()
+        except Exception:
+            print("error divine")
+            return 1
+
+    def guard(self):
+        try:
+            return self.role.guard()
+        except Exception:
+            print("error guard")
+            return 1
 
     def finish(self):
-        return None
+        return self.role.finish()
 
 
-class Werewolf(Villager):
-    def __init__(self, agent_name):
-        super().__init__(agent_name)
-
-    def update_talk_divine(content):
-        # DIVINEDで自分を村人側ってするってことは仲間だから
-        if content[0] == "DIVINED" and content[1] == self.agentIdx and (content[2] == "VILLAGER" or content[2] == "SEER")　and self.mode == agent:
-            self.mode = -1
-            self.repelTargetQue.pop()
-            self.WolfEstimateFlag = True
-
-    def update(self, base_info, diff_data, request):
-        super().update(self, base_info, diff_data, request)
-
-    def talk(self):
-        elif self.myrole == "WEREWOLF":
-            if self.talkCount == 0 and self.day == 1:
-                self.talkCount += 1
-                return cb.COMINGOUT(self.agentIdx, "VILLAGER")
-            elif self.talkCount <= 1:
-                self.talkCount += 1
-                if self.mode == -1:
-                    self.voteIdxRandom = random.randint(0, self.playerNum) + 1
-                    return cb.VOTE(self.voteIdxRandom)
-                else:
-                    return cb.VOTE(self.mode + 1)
-            elif self.talkCount <= 2:
-                self.talkCount += 1
-                return cb.BECAUSE(cb.ESTIMATE(self.mode + 1, "WEREWOLF"))
-            elif self.talkCount <= 6 and len(self.AGREESentenceQue) >= 1:
-                self.talkCount += 1
-                AGREEText = self.AGREESentenceQue.pop()
-                return cb.AGREE(AGREEText)
-            elif self.talkCount <= 9 and len(self.DISAGREESentenceQue) >= 1:
-                DISAGREEText = self.DISAGREESentenceQue.pop()
-                self.talkCount += 1
-                return cb.DISAGREE(DISAGREEText)
-            elif self.talkCount <= 9:
-                self.talkCount += 1
-                return cb.REQUEST(o, "VOTE", self.mode + 1)
-            elif self.talkCount <= 10:
-                # INQUIREをつけるか
+agent = Repel(myname)
 
 
-class Possessed(Villager):
-    def __init__(self, agent_name):
-        super().__init(agent_name)
+# run
+if __name__ == '__main__':
+    aiwolfpy.connect_parse(agent)
 
-    def update(self, base_info, diff_data, request)
-    super().update(self, base_info, diff_data, request)
-
-    def talk(self):
-        elif self.myrole == "POSSESSED":
-            if self.talkCount == 0 and self.day == 1:
-                self.talkCount += 1
-                return cb.COMINGOUT(self.agentIdx, "SEER")
-            elif self.talkCount <= 1:
-                self.talkCount += 1
-                if self.mode == -1:
-                    self.voteIdxRandom = random.randint(0, self.playerNum) + 1
-                    return cb.VOTE(self.voteIdxRandom)
-                else:
-                    return cb.VOTE(self.mode + 1)
-            elif self.talkCount <= 2:
-                self.talkCount += 1
-                return cb.BECAUSE(cb.ESTIMATE(self.mode + 1, "WEREWOLF"))
-            elif self.talkCount <= 6 and len(self.AGREESentenceQue) >= 1:
-                self.talkCount += 1
-                AGREEText = self.AGREESentenceQue.pop()
-                return cb.AGREE(AGREEText)
-            elif self.talkCount <= 9 and len(self.DISAGREESentenceQue) >= 1:
-                DISAGREEText = self.DISAGREESentenceQue.pop()
-                self.talkCount += 1
-                return cb.DISAGREE(DISAGREEText)
-            elif self.talkCount <= 9:
-                self.talkCount += 1
-                return cb.REQUEST(o, "VOTE", self.mode + 1)
-            elif self.talkCount <= 10:
-                if self.mode != -1:
-                    return cb.DIVINED(self.mode + 1, "WEREWOLF")
