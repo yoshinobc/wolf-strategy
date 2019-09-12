@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 from __future__ import print_function, division
+import RepelRole.Villager
+import RepelRole.Seer
+import RepelRole.Werewolf
+import RepelRole.Possessed
 
 # this is main script
 # simple version
@@ -96,4 +100,3 @@ agent = Repel(myname)
 # run
 if __name__ == '__main__':
     aiwolfpy.connect_parse(agent)
-
