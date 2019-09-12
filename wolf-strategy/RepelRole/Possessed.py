@@ -2,6 +2,9 @@ class Possessed(Villager):
     def __init__(self, agent_name):
         super().__init(agent_name)
 
+    def initialize(self, base_info, diff_data, game_setting, myrole):
+        super().initialize(self, base_info, diff_data, game_setting, myrole)
+
     def update(self, base_info, diff_data, request)
     super().update(self, base_info, diff_data, request)
 
