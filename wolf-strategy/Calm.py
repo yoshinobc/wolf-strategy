@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 from __future__ import print_function, division
-from RepelRole import Villager
-from RepelRole import Seer
-from RepelRole import Werewolf
-from RepelRole import Possessed
+from CalmRole import Villager
+from CalmlRole import Seer
+from CalmlRole import Werewolf
+from CalmlRole import Possessed
 
 
 # this is main script
@@ -12,10 +12,10 @@ from RepelRole import Possessed
 import aiwolfpy
 import aiwolfpy.contentbuilder as cb
 
-myname = 'REPEL'
+myname = 'CALM'
 
 
-class Repel(object):
+class Calm(object):
 
     def __init__(self, agent_name):
         # myname

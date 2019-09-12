@@ -1,3 +1,6 @@
+from aiwolfpy import contentbuilder as cb
+
+
 class Possessed(Villager):
     def __init__(self, agent_name):
         super().__init(agent_name)
@@ -5,8 +8,8 @@ class Possessed(Villager):
     def initialize(self, base_info, diff_data, game_setting, myrole):
         super().initialize(self, base_info, diff_data, game_setting, myrole)
 
-    def update(self, base_info, diff_data, request)
-    super().update(self, base_info, diff_data, request)
+    def update(self, base_info, diff_data, request):
+        super().update(self, base_info, diff_data, request)
 
     def talk(self):
         elif self.myrole == "POSSESSED":

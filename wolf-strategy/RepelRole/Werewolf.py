@@ -1,3 +1,6 @@
+from aiwolfpy import contentbuilder as cb
+
+
 class Werewolf(Villager):
     def __init__(self, agent_name):
         super().__init__(agent_name)

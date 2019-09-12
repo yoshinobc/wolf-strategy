@@ -1,9 +1,8 @@
 import random
 from collections import deque
 from utils import splitText
-
+from aiwolfpy import contentbuilder as cb
 #SEER, POSSESSEDはmodeを敵の占いCOにpriorityする
-# updateのtalk以外の処理
 
 
 class Villager(object):

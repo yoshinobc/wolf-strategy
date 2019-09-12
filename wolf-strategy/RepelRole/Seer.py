@@ -1,3 +1,6 @@
+from aiwolfpy import contentbuilder as cb
+
+
 class Seer(Villager):
     def __init__(self, agent_name):
         super().__init__(agent_name)
@@ -51,7 +54,7 @@ class Seer(Villager):
 
     def divine(self):
         if self.mode == -1:
-            return random.randint(0, self.playerNum)
+            return random.randint(1, self.playerNum)
         return self.mode + 1
 
     def finish(self):
