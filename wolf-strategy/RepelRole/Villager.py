@@ -53,6 +53,10 @@ class Villager(object):
         if self.myrole == "WEREWOLF":
             update_talk_divine(content)
 
+    def update_dead(self, row):
+        if row["agent"] - 1 == self.mode:
+            self.repelTargetQue.pop()
+
     def update(self, base_info, diff_data, request):
         if len(self.repelTargetQue) == 0:
             self.mode = -1
@@ -61,6 +65,8 @@ class Villager(object):
         for row in self.diff_data.iterrows():
             if row["type"] == "talk":
                 update_talk(self, row)
+            if row["type"] == "dead" or row["type"] == "execute":
+                update_dead(self, row)
 
     def dayStart(self):
         self.talkCount = 0
