@@ -1,4 +1,5 @@
 from aiwolfpy import contentbuilder as cb
+import Villager
 
 
 class Seer(Villager):
