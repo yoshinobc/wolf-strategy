@@ -76,5 +76,13 @@ def over():
 # 3
 
 
-def request(text):
-    return 'REQUEST(' + text + ''
+def REQUEST(target, text):
+    return 'REQUEST' + str(target) + " " + text
+
+
+def INQUIRE(target, text):
+    return 'INQUIRE' + str(target) + " " + text
+
+
+def BECAUSE(sentence1, sentence2):
+    return "BECAUSE " + sentence1 + " " + sentence2
