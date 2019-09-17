@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 from __future__ import print_function, division
-from CalmRole import Villager
-from CalmlRole import Seer
-from CalmlRole import Werewolf
-from CalmlRole import Possessed
+import CalmRole.Villager
+import CalmRole.Seer
+import CalmRole.Werewolf
+import CalmRole.Possessed
 
 
 # this is main script
@@ -31,78 +31,103 @@ class Calm(object):
         # print(base_info)
         # print(diff_data)
         if self.base_info["myRole"] == "VILLAGER":
-            self.role = Villager(self.myname)
+            self.role = CalmRole.Villager.Villager(self.myname)
         elif self.base_info["myRole"] == "WEREWOLF":
-            self.role == Werewolf(self.myname)
+            self.role = CalmRole.Werewolf.Werewolf(self.myname)
         elif self.base_info["myRole"] == "SEER":
-            self.role == Seer(self.myname)
+            self.role = CalmRole.Seer.Seer(self.myname)
         elif self.base_info["myRole"] == "POSSESSED":
-            self.role == Possessed(self.myname)
+            self.role = CalmRole.Possessed.Possessed(self.myname)
+        self.role.initialize(base_info, diff_data,
+                             game_setting, self.base_info["myRole"])
 
     def update(self, base_info, diff_data, request):
         self.base_info = base_info
+        self.role.update(base_info, diff_data, request)
+
+        """
         try:
             self.role.update(base_info, diff_data, request)
         except Exception:
-            print("error update")
+            print(self.base_info["myRole"], "error update")
             pass
+        """
         # print(base_info)
         # print(diff_data)
 
     def dayStart(self):
+        self.role.dayStart()
+        """
         try:
             self.role.dayStart()
         except Exception:
-            print("error dayStart")
+            print(self.base_info["myRole"], "error dayStart")
             pass
+        """
 
     def talk(self):
+        return self.role.talk()
+        """
         try:
             return self.role.talk()
         except Exception:
-            print("error talk")
+            print(self.base_info["myRole"], "error talk")
             return cb.over()
+        """
 
     def whisper(self):
         try:
             return self.role.whisper()
         except Exception:
-            print("error whisper")
+            print(self.base_info["myRole"], "error whisper")
             return cb.over()
 
     def vote(self):
+        return self.role.vote()
+        """
         try:
             return self.role.vote()
         except Exception:
-            print("error vote")
+            print(self.base_info["myRole"], "error vote")
         return 1
+        """
 
     def attack(self):
+        return self.role.attack()
+
+        """
         try:
             return self.role.attack()
         except Exception:
-            print("error attack")
+            print(self.base_info["myRole"], "error attack")
             return 1
+        """
 
     def divine(self):
+        return self.role.divine()
+        """
         try:
             return self.role.divine()
         except Exception:
-            print("error divine")
+            print(self.base_info["myRole"], "error divine")
             return 1
+        """
 
     def guard(self):
+        return self.role.guard()
+        """
         try:
             return self.role.guard()
         except Exception:
-            print("error guard")
+            print(self.base_info["myRole"], "error guard")
             return 1
+        """
 
     def finish(self):
         return self.role.finish()
 
 
-agent = Repel(myname)
+agent = Calm(myname)
 
 
 # run
