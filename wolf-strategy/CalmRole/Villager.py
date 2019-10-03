@@ -3,6 +3,9 @@ from collections import deque
 from utils import splitText
 from aiwolfpy import contentbuilder as cb
 # ANYを対応させる
+# 意見が変わった時に報告をする
+# DISAGREE AGREEに反応するエージェント
+# FOLLOWするエージェント INQUIREするagent
 
 
 class Villager(object):
@@ -18,69 +21,88 @@ class Villager(object):
         self.diff_data = diff_data
         self.playerNum = len(self.base_info["remainTalkMap"].keys())
         self.myrole = myrole
+        self.agentIdx = int(self.base_info["agentIdx"]) - 1
         self.suspicion = {}
         for i in range(self.playerNum):
-            self.suspicion[str(i)] = 0
+            if i == self.agentIdx:
+                self.suspicion[str(i)] = -1000
+            else:
+                self.suspicion[str(i)] = 0
         self.AGREESentenceQue = deque([])
         self.DISAGREESentenceQue = deque([])
         self.RequestQue = deque([])
-        self.day = 0
-        self.agentIdx = self.base_info["agentIdx"]
+        self.day = -1
         self.divineans = []
+        self.CoFlag = [False for _ in range(self.playerNum)]
 
     def update_talk_suspicion_villager(self, agent, content):
         if content[0] == "ESTIMATE" and content[2] == "WEREWOLF":
-            self.suspicion[str(agent - 1)] += 1
-            self.suspicion[str(content[1] - 1)] += 2
+            self.suspicion[str(agent)] += 1
+            self.suspicion[str(content[1])] += 2
         if content[0] == "ESTIMATE" and content[2] == "VILLAGER":
-            self.suspicion[str(content[1] - 1)] -= 1
+            self.suspicion[str(content[1])] -= 1
         if content[0] == "ESTIMATE" and content[1] == self.agentIdx and content[2] == self.myrole:
-            self.suspicion[str(agent - 1)] += 10
+            self.suspicion[str(agent)] += 10
+        if content[0] == "COMINGOUT" and content[2] == "WEREWOLF":
+            self.suspicion[str(agent)] += 10
+        if content[0] == "COMINGOUT" and content[2] == "SEER":
+            self.suspicion[str(agent)] += 2
 
     def update_talk_suspicion_werewolf(self, agent, content):
         if content[0] == "ESTIMATE" and content[2] == "WEREWOLF":
-            self.suspicion[str(agent - 1)] += 1
-            self.suspicion[str(content[1] - 1)] -= 2
+            self.suspicion[int(agent)] += 1
+            self.suspicion[int(content[1])] -= 2
         if content[0] == "ESTIMATE" and content[2] == "VILLAGER":
-            self.suspicion[str(content[1] - 1)] += 1
+            self.suspicion[int(content[1])] += 1
         if content[0] == "ESTIMATE" and content[1] == self.agentIdx and content[2] == "WEREWOLF":
-            self.suspicion[str(agent - 1)] += 5
+            self.suspicion[int(agent)] += 5
         if content[0] == "ESTIMATE" and content[1] == self.agentIdx and content[2] == "VILLAGER":
-            self.suspicion[str(agent - 1)] -= 5
+            self.suspicion[int(agent)] -= 5
 
     def update_talk_agreedisagree(self, idx, content):
+        idx = str(idx).zfill(3)
+        if sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1] == 0:
+            return None
         if content[0] == "ESTIMATE":
-            if content[1] == int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]) + 1 and (content[2] == "WEREWOLF" or content[2] == "POSSESSED"):
-                self.AGREESentenceQue.append(idx)
+            if content[1] == sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0] and (content[2] == "WEREWOLF" or content[2] == "POSSESSED"):
+                self.AGREESentenceQue.append(
+                    ("TALK", str(self.day).zfill(2), idx))
             else:
-                self.DISAGREESentenceQue.append(idx)
-        if content[0] == "VOTE":
-            if content[1] == int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]) + 1:
-                self.AGREESentenceQue.append(idx)
+                self.DISAGREESentenceQue.append(
+                    ("TALK", str(self.day).zfill(2), idx))
+        if content[0] == "VOTE" or content[0] == "VOTED":
+            if content[1] == int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]):
+                self.AGREESentenceQue.append(
+                    ("TALK", str(self.day).zfill(2), idx))
             else:
-                self.DISAGREESentenceQue.append(idx)
+                self.DISAGREESentenceQue.append(
+                    ("TALK", str(self.day).zfill(2), idx))
 
     def update_talk_request(self, content):
         pass
         # 他人のリクエストにどれぐらい答えるか
 
     def update_talk(self, row):
-        text, agent = row[1]["text"], row[1]["agent"]
-        content = splitText.splitText(text)
-        if len(content) != 0:
-            if self.myrole == "VILLAGER" or self.myrole == "SEER":
-                self.update_talk_suspicion_villager(agent, content)
-            else:
-                self.update_talk_suspicion_werewolf(agent, content)
-            self.update_talk_agreedisagree(row[1]["idx"], content)
-            self.update_talk_request(content)
+        text, agent = row[1]["text"], int(row[1]["agent"]) - 1
+        texts = splitText.parse_text(text)
+        for text in texts:
+            content = splitText.splitText(text)
+            if len(content) != 0:
+                if self.myrole == "VILLAGER" or self.myrole == "SEER":
+                    self.update_talk_suspicion_villager(agent, content)
+                else:
+                    self.update_talk_suspicion_werewolf(agent, content)
+                self.update_talk_agreedisagree(row[1]["idx"], content)
+                self.update_talk_request(content)
 
     def update_dead(self, row):
-        self.suspicion[str(row[1]["agent"] - 1)] -= 1000
+        self.suspicion[str(int(row[1]["agent"]) - 1)] -= 1000
 
     def update_divine(self, row):
         text = row[1]["text"]
         content = splitText.splitText(text)
+        if content[2] == "WEREWOLF" or content[2] == "POSSESSED":
+            self.suspicion[content[1]] += 100
         self.divineans.append((content[1], content[2]))
 
     def update(self, base_info, diff_data, request):
@@ -97,6 +119,11 @@ class Villager(object):
         self.talkCount = 0
         self.day += 1
         self.voteop = 1
+        self.isCo = False
+        self.isVote = False
+        self.isBecause = False
+        self.isRequestVote = False
+        self.isDivine = False
 
     def vote(self):
         return self.voteop
@@ -106,31 +133,37 @@ class Villager(object):
         return None
 
     def talk(self):
-        if self.talkCount == 0 and self.day == 1:
-            self.talkCount += 1
+        print(self.suspicion)
+        if not self.isCo and self.day == 1:
+            self.isCo = True
             return cb.COMINGOUT(self.agentIdx, "VILLAGER")
-        elif self.talkCount <= 3 and len(self.AGREESentenceQue) >= 1:
-            self.talkCount += 1
-            AGREEText = self.AGREESentenceQue.pop()
-            return cb.AGREE(AGREEText)
-        elif self.talkCount <= 6 and len(self.DISAGREESentenceQue) >= 1:
-            self.talkCount += 1
-            DISAGREEText = self.DISAGREESentenceQue.pop()
-            return cb.DISAGREE(DISAGREEText)
-        elif self.talkCount <= 7:
-            self.talkCount += 1
+        elif not self.isVote:
             self.voteop = int(sorted(self.suspicion.items(),
-                                     key=lambda x: x[1])[-1][0]) + 1
+                                     key=lambda x: x[1])[-1][0])
+            if sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1] == 0:
+                return cb.skip()
+            self.isVote = True
             return cb.VOTE(self.voteop)
-        elif self.talkCount <= 8:
-            self.talkCount += 1
+        elif not self.isBecause:
+            if sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1] == 0:
+                return cb.skip()
+            self.isBecause = True
             return cb.BECAUSE(cb.ESTIMATE(self.voteop, "WEREWOLF"), cb.VOTE(self.voteop))
-        elif self.talkCount <= 9:
-            self.talkCount += 1
+        elif not self.isRequestVote:
+            if sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1] == 0:
+                return cb.skip()
+            self.isRequestVote = True
             return cb.REQUEST("ANY", cb.VOTE(self.voteop))
-        elif self.talkCount <= 10:
-            self.talkCount += 1
-            return cb.skip()
-        else:
-            return cb.skip()
-            # INQUIREをつけるか
+        elif len(self.AGREESentenceQue) >= 1:
+            AGREEText = self.AGREESentenceQue.pop()
+            return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])
+        elif len(self.DISAGREESentenceQue) >= 1:
+            DISAGREEText = self.DISAGREESentenceQue.pop()
+            return cb.DISAGREE(DISAGREEText[0], DISAGREEText[1], DISAGREEText[2])
+        for i, flag in enumerate(self.CoFlag):
+            if not flag:
+                return cb.REQUEST(i, cb.COMINGOUT(i, "VILLAGER"))
+            else:
+                return cb.skip()
+        return cb.skip()
+        # INQUIREをつけるか

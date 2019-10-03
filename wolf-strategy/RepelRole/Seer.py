@@ -13,48 +13,58 @@ class Seer(Villager.Villager):
         super().initialize(base_info, diff_data, game_setting, myrole)
 
     def update_talk_request(self, agent, idx, content):
+        idx = str(idx).zfill(3)
         if agent != self.mode and content[0] == self.agentIdx:
             requestContent = splitText.splitText(content[1])
             if requestContent[0] == "DIVINED" or requestContent[0] == "VOTE":
-                self.DISAGREESentenceQue.append(idx)
+                self.DISAGREESentenceQue.append(
+                    (requestContent[0], str(self.day).zfill(2), idx))
+
+    def update_talk_repel(self, agent, content):
+        super().update_talk_repel(agent, content)
+        if (content[0] == "COMINGOUT" and content[2] == "SEER"):
+            self.repelTargetQue.remove(int(content[1])-1)
 
     def update(self, base_info, diff_data, request):
         super().update(base_info, diff_data, request)
 
     def talk(self):
-        if self.talkCount == 0 and self.day == 1:
-            self.talkCount += 1
+        if not self.isCo and self.day == 1:
+            self.isCo = True
             return cb.COMINGOUT(self.agentIdx, "SEER")
-        elif self.talkCount <= 1:
-            self.talkCount += 1
+        elif not self.isVote:
+            self.isVote = True
             if self.mode == -1:
-                self.voteIdxRandom = random.randint(0, self.playerNum) + 1
+                while True:
+                    self.voteIdxRandom = random.randint(
+                        0, self.playerNum - 1)
+                    if self.voteIdxRandom != self.agentIdx:
+                        break
                 return cb.VOTE(self.voteIdxRandom)
             else:
-                return cb.VOTE(self.mode + 1)
-        elif self.talkCount <= 2:
-            self.talkCount += 1
+                return cb.VOTE(self.mode)
+        elif not self.isBecause:
             if self.mode == -1:
                 return cb.skip()
             else:
-                return cb.BECAUSE(cb.ESTIMATE(self.mode + 1, "WEREWOLF"), cb.VOTE(self.mode+1))
-        elif self.talkCount <= 6 and len(self.AGREESentenceQue) >= 1:
-            self.talkCount += 1
+                self.isBecause = True
+                return cb.BECAUSE(cb.ESTIMATE(self.mode, "WEREWOLF"), cb.VOTE(self.mode))
+        elif len(self.AGREESentenceQue) >= 1:
             AGREEText = self.AGREESentenceQue.pop()
-            return cb.AGREE(AGREEText)
-        elif self.talkCount <= 9 and len(self.DISAGREESentenceQue) >= 1:
+            return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])
+        elif len(self.DISAGREESentenceQue) >= 1:
             DISAGREEText = self.DISAGREESentenceQue.pop()
-            self.talkCount += 1
-            return cb.DISAGREE(DISAGREEText)
-        elif self.talkCount <= 9:
-            self.talkCount += 1
+            return cb.DISAGREE(DISAGREEText[0], DISAGREEText[1], DISAGREEText[2])
+        elif not self.isRequest:
             if self.mode == -1:
                 return cb.skip()
             else:
-                return cb.REQUEST("ANY", cb.VOTE(self.mode+1))
-        elif self.talkCount <= 10:
+                self.isRequest = True
+                return cb.REQUEST("ANY", cb.VOTE(self.mode))
+        elif not self.isDivined:
             if self.mode != -1:
-                return cb.DIVINED(self.mode + 1, "WEREWOLF")
+                self.isDivined = True
+                return cb.DIVINED(self.mode, "WEREWOLF")
             else:
                 return cb.skip()
         else:
@@ -66,10 +76,11 @@ class Seer(Villager.Villager):
     def divine(self):
         if self.mode == -1:
             return random.randint(1, self.playerNum)
-        return self.mode + 1
+        return self.mode
 
     def finish(self):
         return None
 
     def dayStart(self):
         super().dayStart()
+        self.isDivined = False

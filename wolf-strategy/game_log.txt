@@ -1,0 +1,162 @@
+=============================================
+======
+Agent[01]	Sample3	ALIVE	POSSESSED
+Agent[02]	Sample2	ALIVE	VILLAGER
+Agent[03]	Sample1	ALIVE	SEER
+Agent[04]	REPEL	ALIVE	WEREWOLF
+Agent[05]	CALM	ALIVE	VILLAGER
+Human:4
+Werewolf:1
+=============================================
+=============================================
+Day 00
+========talk========
+========Whisper========
+========Actions========
+null executed
+Agent[03] divine Agent[04]. Result is WEREWOLF
+======
+Agent[01]	Sample3	ALIVE	POSSESSED
+Agent[02]	Sample2	ALIVE	VILLAGER
+Agent[03]	Sample1	ALIVE	SEER
+Agent[04]	REPEL	ALIVE	WEREWOLF	divined
+Agent[05]	CALM	ALIVE	VILLAGER
+Human:4
+Werewolf:1
+=============================================
+=============================================
+Day 01
+========talk========
+Day01 00[000]	Agent[01]	Skip
+Day01 00[001]	Agent[05]	COMINGOUT Agent[05] VILLAGER
+Day01 00[002]	Agent[03]	COMINGOUT Agent[03] SEER
+Day01 00[003]	Agent[02]	Skip
+Day01 00[004]	Agent[04]	COMINGOUT Agent[04] VILLAGER
+Day01 01[005]	Agent[02]	Skip
+Day01 01[006]	Agent[04]	VOTE Agent[03]
+Day01 01[007]	Agent[03]	DAY 1 (DIVINED Agent[04] WEREWOLF)
+Day01 01[008]	Agent[05]	VOTE Agent[03]
+Day01 01[009]	Agent[01]	COMINGOUT Agent[01] SEER
+Day01 02[010]	Agent[01]	DAY 1 (DIVINED Agent[03] WEREWOLF)
+Day01 02[011]	Agent[02]	AND (VOTE Agent[04]) (REQUEST ANY (VOTE Agent[04]))
+Day01 02[012]	Agent[04]	Skip
+Day01 02[013]	Agent[03]	BECAUSE (DAY 1 (DIVINED Agent[04] WEREWOLF)) (REQUEST ANY (VOTE Agent[04]))
+Day01 02[014]	Agent[05]	BECAUSE (ESTIMATE Agent[03] WEREWOLF) (VOTE Agent[03])
+Day01 03[015]	Agent[05]	REQUEST ANY (VOTE Agent[03])
+Day01 03[016]	Agent[04]	VOTE Agent[02]
+Day01 03[017]	Agent[02]	Skip
+Day01 03[018]	Agent[01]	BECAUSE (DAY 1 (DIVINED Agent[03] WEREWOLF)) (REQUEST ANY (VOTE Agent[03]))
+Day01 03[019]	Agent[03]	BECAUSE (DAY 1 (DIVINED Agent[04] WEREWOLF)) (AND (VOTE Agent[04]) (REQUEST ANY (VOTE Agent[04])))
+Day01 04[020]	Agent[04]	Skip
+Day01 04[021]	Agent[03]	Skip
+Day01 04[022]	Agent[05]	DISAGREE TALK day01 ID:019
+Day01 04[023]	Agent[01]	BECAUSE (DAY 1 (DIVINED Agent[03] WEREWOLF)) (AND (VOTE Agent[03]) (REQUEST ANY (VOTE Agent[03])))
+Day01 04[024]	Agent[02]	AND (VOTE Agent[03]) (REQUEST ANY (VOTE Agent[03]))
+Day01 05[025]	Agent[03]	Skip
+Day01 05[026]	Agent[01]	Skip
+Day01 05[027]	Agent[02]	Skip
+Day01 05[028]	Agent[05]	DISAGREE TALK day01 ID:024
+Day01 05[029]	Agent[04]	Skip
+Day01 06[030]	Agent[01]	Skip
+Day01 06[031]	Agent[02]	Skip
+Day01 06[032]	Agent[05]	DISAGREE TALK day01 ID:023
+Day01 06[033]	Agent[04]	Over
+Day01 06[034]	Agent[03]	Over
+Day01 07[035]	Agent[04]	Over
+Day01 07[036]	Agent[02]	Over
+Day01 07[037]	Agent[01]	Over
+Day01 07[038]	Agent[05]	DISAGREE TALK day01 ID:018
+Day01 07[039]	Agent[03]	Over
+Day01 08[040]	Agent[01]	Over
+Day01 08[041]	Agent[03]	Over
+Day01 08[042]	Agent[05]	DISAGREE TALK day01 ID:016
+Day01 08[043]	Agent[02]	Over
+Day01 08[044]	Agent[04]	Over
+Day01 09[045]	Agent[01]	Over
+Day01 09[046]	Agent[05]	DISAGREE TALK day01 ID:015
+Day01 09[047]	Agent[04]	Over
+Day01 09[048]	Agent[03]	Over
+Day01 09[049]	Agent[02]	Over
+Day01 10[050]	Agent[01]	Over
+Day01 10[051]	Agent[05]	Over
+Day01 10[052]	Agent[02]	Over
+Day01 10[053]	Agent[03]	Over
+Day01 10[054]	Agent[04]	Over
+========Whisper========
+========Actions========
+Vote:Agent[01]->Agent[03]
+Vote:Agent[02]->Agent[03]
+Vote:Agent[03]->Agent[04]
+Vote:Agent[04]->Agent[01]
+Vote:Agent[05]->Agent[02]
+AttackVote:Agent[04]->Agent[01]
+Agent[03] executed
+Agent[01] attacked
+======
+Agent[01]	Sample3	DEAD	POSSESSED	attacked
+Agent[02]	Sample2	ALIVE	VILLAGER
+Agent[03]	Sample1	DEAD	SEER	executed
+Agent[04]	REPEL	ALIVE	WEREWOLF
+Agent[05]	CALM	ALIVE	VILLAGER
+Human:2
+Werewolf:1
+=============================================
+=============================================
+Day 02
+========talk========
+Day02 00[000]	Agent[02]	Skip
+Day02 00[001]	Agent[05]	Skip
+Day02 00[002]	Agent[04]	VOTE Agent[02]
+Day02 01[003]	Agent[04]	BECAUSE (ESTIMATE Agent[02] WEREWOLF) (VOTE Agent[02])
+Day02 01[004]	Agent[05]	Skip
+Day02 01[005]	Agent[02]	Skip
+Day02 02[006]	Agent[05]	VOTE Agent[02]
+Day02 02[007]	Agent[04]	AGREE TALK day02 ID:003
+Day02 02[008]	Agent[02]	AND (VOTE Agent[05]) (REQUEST ANY (VOTE Agent[05]))
+Day02 03[009]	Agent[04]	Skip
+Day02 03[010]	Agent[05]	BECAUSE (ESTIMATE Agent[02] WEREWOLF) (VOTE Agent[02])
+Day02 03[011]	Agent[02]	Skip
+Day02 04[012]	Agent[04]	AGREE TALK day02 ID:010
+Day02 04[013]	Agent[02]	Skip
+Day02 04[014]	Agent[05]	REQUEST ANY (VOTE Agent[02])
+Day02 05[015]	Agent[02]	AND (VOTE Agent[02]) (REQUEST ANY (VOTE Agent[02]))
+Day02 05[016]	Agent[05]	DISAGREE TALK day02 ID:014
+Day02 05[017]	Agent[04]	Skip
+Day02 06[018]	Agent[05]	DISAGREE TALK day02 ID:015
+Day02 06[019]	Agent[02]	Skip
+Day02 06[020]	Agent[04]	Skip
+Day02 07[021]	Agent[04]	Over
+Day02 07[022]	Agent[02]	Skip
+Day02 07[023]	Agent[05]	DISAGREE TALK day02 ID:010
+Day02 08[024]	Agent[05]	DISAGREE TALK day02 ID:010
+Day02 08[025]	Agent[02]	Over
+Day02 08[026]	Agent[04]	Over
+Day02 09[027]	Agent[04]	Over
+Day02 09[028]	Agent[05]	DISAGREE TALK day02 ID:008
+Day02 09[029]	Agent[02]	Over
+Day02 10[030]	Agent[04]	Over
+Day02 10[031]	Agent[05]	DISAGREE TALK day02 ID:006
+Day02 10[032]	Agent[02]	Over
+Day02 11[033]	Agent[04]	Over
+Day02 11[034]	Agent[02]	Over
+Day02 11[035]	Agent[05]	DISAGREE TALK day02 ID:003
+Day02 12[036]	Agent[02]	Over
+Day02 12[037]	Agent[04]	Over
+Day02 12[038]	Agent[05]	Over
+========Whisper========
+========Actions========
+Vote:Agent[02]->Agent[04]
+Vote:Agent[04]->Agent[02]
+Vote:Agent[05]->Agent[04]
+Agent[04] executed
+======
+Agent[01]	Sample3	DEAD	POSSESSED
+Agent[02]	Sample2	ALIVE	VILLAGER
+Agent[03]	Sample1	DEAD	SEER
+Agent[04]	REPEL	DEAD	WEREWOLF	executed
+Agent[05]	CALM	ALIVE	VILLAGER
+Human:2
+Werewolf:0
+=============================================
+Winner:VILLAGER
+=============================================

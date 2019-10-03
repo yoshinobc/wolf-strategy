@@ -30,31 +30,33 @@ class Possessed(Villager.Villager):
         return None
 
     def talk(self):
-        if self.talkCount == 0 and self.day == 1:
-            self.talkCount += 1
+        if not self.isCo and self.day == 1:
+            self.isCo = True
             return cb.COMINGOUT(self.agentIdx, "SEER")
-        elif self.talkCount <= 3 and len(self.AGREESentenceQue) >= 1:
-            self.talkCount += 1
+        elif len(self.AGREESentenceQue) >= 1:
             AGREEText = self.AGREESentenceQue.pop()
-            return cb.AGREE(AGREEText)
-        elif self.talkCount <= 6 and len(self.DISAGREESentenceQue) >= 1:
-            self.talkCount += 1
+            return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])
+        elif len(self.DISAGREESentenceQue) >= 1:
             DISAGREEText = self.DISAGREESentenceQue.pop()
-            return cb.DISAGREE(DISAGREEText)
-        elif self.talkCount <= 7:
-            self.talkCount += 1
+            return cb.DISAGREE(DISAGREEText[0], DISAGREEText[1], DISAGREEText[2])
+        elif not self.isVote:
+            self.isVote = True
             self.voteop = int(
-                sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]) + 1
+                sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0])
             return cb.VOTE(self.voteop)
-        elif self.talkCount <= 8:
-            self.talkCount += 1
+        elif not self.isBecause:
+            self.isBecause = True
             return cb.BECAUSE(cb.ESTIMATE(self.voteop, "WEREWOLF"), cb.VOTE(self.voteop))
-        elif self.talkCount <= 9:
-            self.talkCount += 1
+        elif not self.isRequestVote:
+            self.isRequestVote = True
             return cb.REQUEST("ANY", cb.VOTE(self.voteop))
-        elif self.talkCount <= 10:
-            self.talkCount += 1
-            return cb.DIVINED(int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]) + 1, "WEREWOLF")
+        elif not self.isDivine:
+            self.isDivine = True
+            return cb.DIVINED(int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]), "WEREWOLF")
             # INQUIREをつけるか
-        else:
-            return cb.skip()
+        for i, flag in enumerate(self.CoFlag):
+            if not flag:
+                return cb.REQUEST(i, cb.COMINGOUT(i, "VILLAGER"))
+            else:
+                return cb.skip()
+        return cb.skip()
