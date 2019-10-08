@@ -15,17 +15,17 @@ class Seer(Villager.Villager):
 
     def update_talk_agreedisagree(self, idx, content):
         idx = str(idx).zfill(3)
-        if sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1] == 0:
+        if int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1]) == 0:
             return None
         if content[0] == "ESTIMATE":
-            if content[1] == sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0] and (content[2] == "WEREWOLF" or content[2] == "POSSESSED"):
+            if content[1] == int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]) and (content[2] == "WEREWOLF" or content[2] == "POSSESSED"):
                 self.AGREESentenceQue.append(
                     ("TALK", str(self.day).zfill(2), idx))
             else:
                 self.DISAGREESentenceQue.append(
                     ("TALK", str(self.day).zfill(2), idx))
         if content[0] == "VOTE" or content[0] == "VOTED":
-            if content[1] == sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]:
+            if content[1] == int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]):
                 self.AGREESentenceQue.append(
                     ("TALK", str(self.day).zfill(2), idx))
             else:
@@ -35,7 +35,7 @@ class Seer(Villager.Villager):
                 text2 = content[2]
                 content2 = splitText(text2)
                 if content2[0] == "DIVINE":
-                    if content2[1] == sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]:
+                    if content2[1] == int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]):
                         self.requestdivine = content2[1]
                         self.AGREESentenceQue.append(
                             ("TALK", str(self.day).zfill(2), idx))

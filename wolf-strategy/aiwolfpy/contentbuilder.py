@@ -92,3 +92,7 @@ def INQUIRE(target, text):
 
 def BECAUSE(sentence1, sentence2):
     return "BECAUSE (" + sentence1 + ") (" + sentence2 + ")"
+
+
+def AND(sentence1, sentence2):
+    return "AND (" + sentence1 + ") (" + sentence2 + ")"

@@ -30,6 +30,7 @@ class Villager(object):
                 self.suspicion[str(i)] = 0
         self.AGREESentenceQue = deque([])
         self.DISAGREESentenceQue = deque([])
+        self.myESTIMATE = None
         self.RequestQue = deque([])
         self.day = -1
         self.divineans = []
@@ -50,21 +51,26 @@ class Villager(object):
 
     def update_talk_suspicion_werewolf(self, agent, content):
         if content[0] == "ESTIMATE" and content[2] == "WEREWOLF":
-            self.suspicion[int(agent)] += 1
-            self.suspicion[int(content[1])] -= 2
+            self.suspicion[str(agent)] += 1
+            self.suspicion[str(content[1])] -= 2
         if content[0] == "ESTIMATE" and content[2] == "VILLAGER":
-            self.suspicion[int(content[1])] += 1
+            self.suspicion[str(content[1])] += 1
         if content[0] == "ESTIMATE" and content[1] == self.agentIdx and content[2] == "WEREWOLF":
-            self.suspicion[int(agent)] += 5
+            self.suspicion[str(agent)] += 5
         if content[0] == "ESTIMATE" and content[1] == self.agentIdx and content[2] == "VILLAGER":
-            self.suspicion[int(agent)] -= 5
+            self.suspicion[str(agent)] -= 5
 
-    def update_talk_agreedisagree(self, idx, content):
+    def update_talk_agreedisagree(self, agent, idx, content):
         idx = str(idx).zfill(3)
-        if sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1] == 0:
+        if agent == self.agentIdx:
+            if content[0] == "ESTIMATE" and content[2] == "WEREWOLF":
+                print("muESTIMATE")
+                self.myESTIMATE = ("TALK", str(self.day).zfill(2), idx)
+            return None
+        if int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1]) == 0:
             return None
         if content[0] == "ESTIMATE":
-            if content[1] == sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0] and (content[2] == "WEREWOLF" or content[2] == "POSSESSED"):
+            if content[1] == int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]) and (content[2] == "WEREWOLF" or content[2] == "POSSESSED"):
                 self.AGREESentenceQue.append(
                     ("TALK", str(self.day).zfill(2), idx))
             else:
@@ -92,7 +98,7 @@ class Villager(object):
                     self.update_talk_suspicion_villager(agent, content)
                 else:
                     self.update_talk_suspicion_werewolf(agent, content)
-                self.update_talk_agreedisagree(row[1]["idx"], content)
+                self.update_talk_agreedisagree(agent, row[1]["idx"], content)
                 self.update_talk_request(content)
 
     def update_dead(self, row):
@@ -119,6 +125,7 @@ class Villager(object):
         self.talkCount = 0
         self.day += 1
         self.voteop = 1
+        self.old_voteop = None
         self.isCo = False
         self.isVote = False
         self.isBecause = False
@@ -138,19 +145,25 @@ class Villager(object):
             self.isCo = True
             return cb.COMINGOUT(self.agentIdx, "VILLAGER")
         elif not self.isVote:
+            if int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1]) == 0:
+                return cb.skip()
             self.voteop = int(sorted(self.suspicion.items(),
                                      key=lambda x: x[1])[-1][0])
-            if sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1] == 0:
-                return cb.skip()
+            print(self.old_voteop, self.voteop)
+            if self.old_voteop != self.voteop and self.old_voteop != None:
+                print("change idea")
+                return cb.DISAGREE(self.myESTIMATE[0], self.myESTIMATE[1], self.myESTIMATE[2])
             self.isVote = True
+            self.old_voteop = self.voteop
             return cb.VOTE(self.voteop)
+
         elif not self.isBecause:
-            if sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1] == 0:
+            if int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1]) == 0:
                 return cb.skip()
             self.isBecause = True
             return cb.BECAUSE(cb.ESTIMATE(self.voteop, "WEREWOLF"), cb.VOTE(self.voteop))
         elif not self.isRequestVote:
-            if sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1] == 0:
+            if int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1]) == 0:
                 return cb.skip()
             self.isRequestVote = True
             return cb.REQUEST("ANY", cb.VOTE(self.voteop))
