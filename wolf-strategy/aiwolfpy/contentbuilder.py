@@ -18,7 +18,10 @@ def GUARD(target):
 
 
 def VOTE(target):
-    return 'VOTE Agent[' + "{0:02d}".format(int(target)+1) + ']'
+    if target == "ANY":
+        return 'VOTE ' + "ANY"
+    else:
+        return 'VOTE Agent[' + "{0:02d}".format(int(target)+1) + ']'
 
 
 def ATTACK(target):
@@ -80,14 +83,14 @@ def REQUEST(target, text):
     if target == "ANY":
         return 'REQUEST ' + str(target) + " (" + text + ")"
     else:
-        return 'REQUEST ' + str(target+1) + " (" + text + ")"
+        return 'REQUEST Agent[' + "{0:02d}".format(int(target)+1) + ']' + " ( " + text + " )"
 
 
 def INQUIRE(target, text):
     if target == "ANY":
         return 'INQUIRE ' + str(target) + " (" + text + ")"
     else:
-        return 'INQUIRE ' + str(target+1) + " (" + text + ")"
+        return 'INQUIRE Agent[' + "{0:02d}".format(int(target)+1) + ']' + " ( " + text + " )"
 
 
 def BECAUSE(sentence1, sentence2):

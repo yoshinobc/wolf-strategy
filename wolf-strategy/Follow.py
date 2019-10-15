@@ -33,11 +33,11 @@ class Follow(object):
         if self.base_info["myRole"] == "VILLAGER":
             self.role = FollowRole.Villager.Villager(self.myname)
         elif self.base_info["myRole"] == "WEREWOLF":
-            self.role = FollowRol.Werewolf.Werewolf(self.myname)
+            self.role = FollowRole.Werewolf.Werewolf(self.myname)
         elif self.base_info["myRole"] == "SEER":
-            self.role = FollowRol.Seer.Seer(self.myname)
+            self.role = FollowRole.Seer.Seer(self.myname)
         elif self.base_info["myRole"] == "POSSESSED":
-            self.role = FollowRol.Possessed.Possessed(self.myname)
+            self.role = FollowRole.Possessed.Possessed(self.myname)
         self.role.initialize(base_info, diff_data,
                              game_setting, self.base_info["myRole"])
 

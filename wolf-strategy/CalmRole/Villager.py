@@ -7,6 +7,9 @@ from aiwolfpy import contentbuilder as cb
 # DISAGREE AGREEに反応するエージェント
 # FOLLOWするエージェント INQUIREするagent
 
+# INQUIREで一番多い人 Followerに追加する
+# Action
+
 
 class Villager(object):
     def __init__(self, agent_name):
@@ -64,7 +67,7 @@ class Villager(object):
         idx = str(idx).zfill(3)
         if agent == self.agentIdx:
             if content[0] == "ESTIMATE" and content[2] == "WEREWOLF":
-                print("muESTIMATE")
+                # print("muESTIMATE")
                 self.myESTIMATE = ("TALK", str(self.day).zfill(2), idx)
             return None
         if int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1]) == 0:
@@ -99,7 +102,7 @@ class Villager(object):
                 else:
                     self.update_talk_suspicion_werewolf(agent, content)
                 self.update_talk_agreedisagree(agent, row[1]["idx"], content)
-                self.update_talk_request(content)
+                self.update_talk_request(row)
 
     def update_dead(self, row):
         self.suspicion[str(int(row[1]["agent"]) - 1)] -= 1000
@@ -108,7 +111,7 @@ class Villager(object):
         text = row[1]["text"]
         content = splitText.splitText(text)
         if content[2] == "WEREWOLF" or content[2] == "POSSESSED":
-            self.suspicion[content[1]] += 100
+            self.suspicion[str(content[1])] += 100
         self.divineans.append((content[1], content[2]))
 
     def update(self, base_info, diff_data, request):
@@ -122,7 +125,6 @@ class Villager(object):
                 self.update_divine(row)
 
     def dayStart(self):
-        self.talkCount = 0
         self.day += 1
         self.voteop = 1
         self.old_voteop = None
@@ -133,14 +135,14 @@ class Villager(object):
         self.isDivine = False
 
     def vote(self):
-        return self.voteop
+        return int(self.voteop)+1
 
     def finish(self):
         self.divineans = []
         return None
 
     def talk(self):
-        print(self.suspicion)
+        # print(self.suspicion)
         if not self.isCo and self.day == 1:
             self.isCo = True
             return cb.COMINGOUT(self.agentIdx, "VILLAGER")
@@ -149,9 +151,9 @@ class Villager(object):
                 return cb.skip()
             self.voteop = int(sorted(self.suspicion.items(),
                                      key=lambda x: x[1])[-1][0])
-            print(self.old_voteop, self.voteop)
+            #print(self.old_voteop, self.voteop)
             if self.old_voteop != self.voteop and self.old_voteop != None:
-                print("change idea")
+                #print("change idea")
                 return cb.DISAGREE(self.myESTIMATE[0], self.myESTIMATE[1], self.myESTIMATE[2])
             self.isVote = True
             self.old_voteop = self.voteop
@@ -170,12 +172,13 @@ class Villager(object):
         elif len(self.AGREESentenceQue) >= 1:
             AGREEText = self.AGREESentenceQue.pop()
             return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])
-        elif len(self.DISAGREESentenceQue) >= 1:
+        elif len(self.DISAGREESentenceQue) >= 2:
             DISAGREEText = self.DISAGREESentenceQue.pop()
             return cb.DISAGREE(DISAGREEText[0], DISAGREEText[1], DISAGREEText[2])
         for i, flag in enumerate(self.CoFlag):
             if not flag:
-                return cb.REQUEST(i, cb.COMINGOUT(i, "VILLAGER"))
+                self.CoFlag[i] = True
+                return cb.REQUEST(i, cb.COMINGOUT(i, "ANY"))
             else:
                 return cb.skip()
         return cb.skip()

@@ -23,9 +23,6 @@ class Possessed(Villager.Villager):
     def dayStart(self):
         super().dayStart()
 
-    def vote(self):
-        return self.voteop
-
     def finish(self):
         return None
 
@@ -36,7 +33,7 @@ class Possessed(Villager.Villager):
         elif len(self.AGREESentenceQue) >= 1:
             AGREEText = self.AGREESentenceQue.pop()
             return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])
-        elif len(self.DISAGREESentenceQue) >= 1:
+        elif len(self.DISAGREESentenceQue) >= 2:
             DISAGREEText = self.DISAGREESentenceQue.pop()
             return cb.DISAGREE(DISAGREEText[0], DISAGREEText[1], DISAGREEText[2])
         elif not self.isVote:
@@ -56,6 +53,7 @@ class Possessed(Villager.Villager):
             # INQUIREをつけるか
         for i, flag in enumerate(self.CoFlag):
             if not flag:
+                self.CoFlag[i] = True
                 return cb.REQUEST(i, cb.COMINGOUT(i, "VILLAGER"))
             else:
                 return cb.skip()

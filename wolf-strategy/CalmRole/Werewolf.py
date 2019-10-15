@@ -23,9 +23,6 @@ class Werewolf(Villager.Villager):
     def dayStart(self):
         super().dayStart()
 
-    def vote(self):
-        return self.voteop
-
     def attack(self):
         return int(sorted(self.suspicion.items(), key=lambda x: x[1])[0][0])
 
@@ -39,7 +36,7 @@ class Werewolf(Villager.Villager):
         elif len(self.AGREESentenceQue) >= 1:
             AGREEText = self.AGREESentenceQue.pop()
             return cb.AGREE("TALK", AGREEText[0], AGREEText[1])
-        elif len(self.DISAGREESentenceQue) >= 1:
+        elif len(self.DISAGREESentenceQue) >= 2:
             DISAGREEText = self.DISAGREESentenceQue.pop()
             return cb.DISAGREE("TALK", DISAGREEText[0], DISAGREEText[1])
         elif not self.isVote:
@@ -55,6 +52,7 @@ class Werewolf(Villager.Villager):
             return cb.REQUEST("ANY", cb.VOTE(self.voteop))
         for i, flag in enumerate(self.CoFlag):
             if not flag:
+                self.CoFlag[i] = True
                 return cb.REQUEST(i, cb.COMINGOUT(i, "VILLAGER"))
             else:
                 return cb.skip()

@@ -15,8 +15,8 @@ class Werewolf(Villager.Villager):
     def update_talk_divine(self, agent, content):
         # DIVINEDで自分を村人側ってするってことは仲間だから
         if content[0] == "DIVINED" and content[1] == self.agentIdx and (content[2] == "VILLAGER" or content[2] == "SEER") and agent == self.mode:
-            self.mode = -1
             self.repelTargetQue.remove(self.mode)
+            self.mode = -1
             self.WolfEstimateFlag = True
 
     def update(self, base_info, diff_data, request):
@@ -36,6 +36,7 @@ class Werewolf(Villager.Villager):
                         0, self.playerNum - 1)
                     if self.voteIdxRandom != self.agentIdx:
                         break
+                print(self.voteIdxRandom)
                 return cb.VOTE(self.voteIdxRandom)
             else:
                 return cb.VOTE(self.mode)
@@ -68,5 +69,7 @@ class Werewolf(Villager.Villager):
 
     def attack(self):
         if self.mode == -1:
-            return self.voteIdxRandom
+            print("voterandom", self.voteIdxRandom)
+            return self.voteIdxRandom+1
+        print("attack mode", self.mode)
         return self.mode

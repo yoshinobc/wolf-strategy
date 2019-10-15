@@ -23,7 +23,8 @@ class Seer(Villager.Villager):
     def update_talk_repel(self, agent, content):
         super().update_talk_repel(agent, content)
         if (content[0] == "COMINGOUT" and content[2] == "SEER"):
-            self.repelTargetQue.remove(int(content[1])-1)
+            if int(content[1])-1 in self.repelTargetQue:
+                self.repelTargetQue.remove(int(content[1])-1)
 
     def update(self, base_info, diff_data, request):
         super().update(base_info, diff_data, request)

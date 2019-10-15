@@ -13,7 +13,7 @@ class Seer(Villager.Villager):
     def initialize(self, base_info, diff_data, game_setting, myrole):
         super().initialize(base_info, diff_data, game_setting, myrole)
 
-    def update_talk_agreedisagree(self, idx, content):
+    def update_talk_agreedisagree(self, agent, idx, content):
         idx = str(idx).zfill(3)
         if int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1]) == 0:
             return None
@@ -54,9 +54,6 @@ class Seer(Villager.Villager):
         super().dayStart()
         self.requestdivine = -1
 
-    def vote(self):
-        return self.voteop
-
     def divine(self):
         if self.requestdivine == -1:
             return int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0])
@@ -73,7 +70,7 @@ class Seer(Villager.Villager):
         elif len(self.AGREESentenceQue) >= 1:
             AGREEText = self.AGREESentenceQue.pop()
             return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])
-        elif len(self.DISAGREESentenceQue) >= 1:
+        elif len(self.DISAGREESentenceQue) >= 2:
             DISAGREEText = self.DISAGREESentenceQue.pop()
             return cb.DISAGREE(DISAGREEText[0], DISAGREEText[1], DISAGREEText[2])
         elif not self.isVote:
@@ -92,6 +89,7 @@ class Seer(Villager.Villager):
             return cb.DIVINED(self.divineans[0][0], self.divineans[0][1])
         for i, flag in enumerate(self.CoFlag):
             if not flag:
+                self.CoFlag[i] = True
                 return cb.REQUEST(i, cb.COMINGOUT(i, "VILLAGER"))
             else:
                 return cb.skip()

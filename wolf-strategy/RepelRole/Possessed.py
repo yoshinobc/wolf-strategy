@@ -39,10 +39,10 @@ class Possessed(Villager.Villager):
                 return cb.BECAUSE(cb.ESTIMATE(self.mode, "WEREWOLF"), cb.VOTE(self.mode))
         elif len(self.AGREESentenceQue) >= 1:
             AGREEText = self.AGREESentenceQue.pop()
-            return cb.AGREE(AGREEText)
+            return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])
         elif len(self.DISAGREESentenceQue) >= 1:
             DISAGREEText = self.DISAGREESentenceQue.pop()
-            return cb.DISAGREE(DISAGREEText)
+            return cb.DISAGREE(ISAGREEText[0], DISAGREEText[1], DISAGREEText[2])
         elif not self.isRequest:
             self.isRequest = True
             if self.mode == -1:

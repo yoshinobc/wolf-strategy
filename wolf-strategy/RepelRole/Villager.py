@@ -26,10 +26,13 @@ class Villager(object):
         self.WolfEstimateFlag = False
         self.day = -1
         self.voteIdxRandom = -1
+        print("agentidx", int(self.base_info["agentIdx"])-1)
         self.agentIdx = int(self.base_info["agentIdx"]) - 1
 
     def update_talk_repel(self, agent, content):
-        if (content[0] == "VOTE" and int(content[1]) == self.agentIdx) or (content[0] == "ESTIMATE" and int(content[1]) == self.agentIdx and (content[2] == "WEREWOLF" or content[2] == "POSSESSED")):
+        if len(content) >= 2 and content[1] == "ANY":
+            content[1] = str(self.agentIdx)
+        if (content[0] == "VOTE" and content[1] == str(self.agentIdx)) or (content[0] == "ESTIMATE" and str(content[1]) == self.agentIdx and (content[2] == "WEREWOLF" or content[2] == "POSSESSED")):
             if agent not in self.repelTargetQue:
                 self.repelTargetQue.append(agent)
 
@@ -65,6 +68,7 @@ class Villager(object):
         if int(row[1]["agent"]) - 1 == self.mode:
             print("dead", self.mode)
             self.repelTargetQue.remove(self.mode)
+            print("repelque", self.repelTargetQue)
 
     def update(self, base_info, diff_data, request):
         self.diff_data = diff_data
@@ -101,6 +105,7 @@ class Villager(object):
                             0, self.playerNum - 1)
                         if self.voteIdxRandom != self.agentIdx:
                             break
+                print("voteidxrandom", self.voteIdxRandom)
                 return cb.VOTE(self.voteIdxRandom)
             else:
                 return cb.VOTE(self.mode)

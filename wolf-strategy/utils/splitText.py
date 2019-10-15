@@ -1,4 +1,5 @@
 import re
+# ANYに対応する
 
 
 def parse_text_sub(text):
@@ -45,34 +46,61 @@ def splitText(text):
         role = temp[2]
         return [topic, target, role]
     elif topic == "DIVINATION":
-        target = int(temp[1][6:8]) - 1
+        if temp[1][6:8] in "ANY":
+            target = "ANY"
+        else:
+            target = int(temp[1][6:8]) - 1
         return [topic, target]
     elif topic == "GUARDED":
-        target = int(temp[1][6:8]) - 1
+        if temp[1][6:8] in "ANY":
+            target = "ANY"
+        else:
+            target = int(temp[1][6:8]) - 1
         return [topic, target]
     elif topic == "VOTE":
-        target = int(temp[1][6:8]) - 1
+        if temp[1][6:8] in "ANY":
+            target = "ANY"
+        else:
+            target = int(temp[1][6:8]) - 1
         return [topic, target]
     elif topic == "ATTACK":
-        target = int(temp[1][6:8]) - 1
+        if temp[1][6:8] in "ANY":
+            target = "ANY"
+        else:
+            target = int(temp[1][6:8]) - 1
         return [topic, target]
     elif topic == "DIVINED":
-        target = int(temp[1][6:8]) - 1
+        if temp[1][6:8] in "ANY":
+            target = "ANY"
+        else:
+            target = int(temp[1][6:8]) - 1
         species = temp[2]
         return [topic, target, species]
     elif topic == "IDENTIFIED":
-        target = int(temp[1][6:8]) - 1
+        if temp[1][6:8] in "ANY":
+            target = "ANY"
+        else:
+            target = int(temp[1][6:8]) - 1
         species = temp[2]
         return [topic, target, species]
     elif topic == "GUARDED":
-        target = int(temp[1][6:8]) - 1
+        if temp[1][6:8] in "ANY":
+            target = "ANY"
+        else:
+            target = int(temp[1][6:8]) - 1
         return [topic, target]
     elif topic == "VOTED":
-        target = int(temp[1][6:8]) - 1
+        if temp[1][6:8] in "ANY":
+            target = "ANY"
+        else:
+            target = int(temp[1][6:8]) - 1
         species = temp[2]
         return [topic, target]
     elif topic == "ATTACKED":
-        target = int(temp[1][6:8]) - 1
+        if temp[1][6:8] in "ANY":
+            target = "ANY"
+        else:
+            target = int(temp[1][6:8]) - 1
         return [topic, target]
     elif topic == "AGERR":
         return [topic]
