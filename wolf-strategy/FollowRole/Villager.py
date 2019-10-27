@@ -70,6 +70,7 @@ class Villager(object):
         self.divineop = None
         self.Agreeque = deque([])
         self.request_vote_agree = None
+        self.talk_turn = 0
 
     def vote(self):
         if self.voteop == None:
@@ -84,6 +85,7 @@ class Villager(object):
         return None
 
     def talk(self):
+        self.talk_turn += 1
         if not self.isCo:
             self.isCo = True
             return cb.AND(cb.AGREE(self.agree_co[0], self.agree_co[1], self.agree_co[2]), cb.COMINGOUT(self.agentIdx, self.myrole))
@@ -94,12 +96,9 @@ class Villager(object):
             AGREEText = self.Agreeque.pop()
             return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])
 
-        elif not self.request_vote:
-            print("test")
+        elif not self.request_vote and self.talk_turn >= 3:
             for d in self.base_info["statusMap"].items():
                 if d[1] == "ALIVE":
-                    print(cb.INQUIRE(
-                        int(d[0])-1, cb.REQUEST(self.agentIdx, cb.VOTE("ANY"))))
                     return cb.INQUIRE(int(d[0])-1, cb.REQUEST(self.agentIdx, cb.VOTE("ANY")))
         else:
             return cb.skip()

@@ -11,6 +11,7 @@ class Seer(Villager.Villager):
 
     def initialize(self, base_info, diff_data, game_setting, myrole):
         super().initialize(base_info, diff_data, game_setting, myrole)
+        self.RequestQue = deque([])
 
     def update_talk_request(self, agent, idx, content):
         idx = str(idx).zfill(3)
@@ -26,23 +27,19 @@ class Seer(Villager.Villager):
             if int(content[1])-1 in self.repelTargetQue:
                 self.repelTargetQue.remove(int(content[1])-1)
 
-    def update(self, base_info, diff_data, request):
-        super().update(base_info, diff_data, request)
+    def dayStart(self):
+        super().dayStart()
+        self.isDivined = False
 
     def talk(self):
         if not self.isCo and self.day == 1:
             self.isCo = True
             return cb.COMINGOUT(self.agentIdx, "SEER")
         elif not self.isVote:
-            self.isVote = True
             if self.mode == -1:
-                while True:
-                    self.voteIdxRandom = random.randint(
-                        0, self.playerNum - 1)
-                    if self.voteIdxRandom != self.agentIdx:
-                        break
-                return cb.VOTE(self.voteIdxRandom)
+                return cb.skip()
             else:
+                self.isVote = True
                 return cb.VOTE(self.mode)
         elif not self.isBecause:
             if self.mode == -1:
@@ -71,9 +68,6 @@ class Seer(Villager.Villager):
         else:
             return cb.skip()
 
-    def vote(self):
-        return super().vote()
-
     def divine(self):
         if self.mode == -1:
             return random.randint(1, self.playerNum)
@@ -81,7 +75,3 @@ class Seer(Villager.Villager):
 
     def finish(self):
         return None
-
-    def dayStart(self):
-        super().dayStart()
-        self.isDivined = False

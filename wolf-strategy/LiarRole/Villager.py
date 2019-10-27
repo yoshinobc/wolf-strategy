@@ -2,6 +2,7 @@ import random
 from collections import deque
 from utils import splitText
 from aiwolfpy import contentbuilder as cb
+from statistics import mode
 
 
 class Villager(object):
@@ -18,6 +19,7 @@ class Villager(object):
         self.playerNum = len(self.base_info["remainTalkMap"].keys())
         self.myrole = myrole
         self.agentIdx = int(self.base_info["agentIdx"]) - 1
+        self.day = -1
         self.suspicion = {}
         for i in range(self.playerNum):
             if i == self.agentIdx:
@@ -26,11 +28,7 @@ class Villager(object):
                 self.suspicion[str(i)] = 0
         self.AGREESentenceQue = deque([])
         self.DISAGREESentenceQue = deque([])
-        self.myESTIMATE = None
-        self.RequestQue = deque([])
-        self.day = -1
         self.divineans = []
-        self.CoFlag = [False for _ in range(self.playerNum)]
 
     def update_talk_suspicion_villager(self, agent, content):
         if content[0] == "ESTIMATE" and content[2] == "WEREWOLF":
@@ -56,6 +54,9 @@ class Villager(object):
         if content[0] == "ESTIMATE" and content[1] == self.agentIdx and content[2] == "VILLAGER":
             self.suspicion[str(agent)] -= 5
 
+    def update_talk_request(self, content):
+        pass
+
     def update_talk_agreedisagree(self, agent, idx, content):
         idx = str(idx).zfill(3)
         if agent == self.agentIdx:
@@ -66,26 +67,26 @@ class Villager(object):
         if int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1]) == 0:
             return None
         if content[0] == "ESTIMATE":
-            if content[1] == int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]) and (content[2] == "WEREWOLF" or content[2] == "POSSESSED"):
+            if content[1] == self.talk_voteop and (content[2] == "WEREWOLF" or content[2] == "POSSESSED"):
                 self.AGREESentenceQue.append(
                     ("TALK", str(self.day).zfill(2), idx))
             else:
                 self.DISAGREESentenceQue.append(
                     ("TALK", str(self.day).zfill(2), idx))
         if content[0] == "VOTE" or content[0] == "VOTED":
-            if content[1] == int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]):
+            for i in range(len(self.vote_list)):
+                if agent != self.vote_list[i][0]:
+                    self.vote_list.append((agent, content[1]))
+            if content[1] == self.talk_voteop:
                 self.AGREESentenceQue.append(
                     ("TALK", str(self.day).zfill(2), idx))
             else:
                 self.DISAGREESentenceQue.append(
                     ("TALK", str(self.day).zfill(2), idx))
 
-    def update_talk_request(self, content):
-        pass
-
     def update_talk(self, row):
         text, agent = row[1]["text"], int(row[1]["agent"]) - 1
-        texts = splitText.parse_text(text)
+        texts = splitText.splitText(text)
         for text in texts:
             content = splitText.splitText(text)
             if len(content) != 0:
@@ -108,7 +109,8 @@ class Villager(object):
 
     def update(self, base_info, diff_data, request):
         self.diff_data = diff_data
-        for row in self.diff_data.iterrows():
+        self.base_info = base_info
+        for row in self / diff_data.iterrows():
             if row[1]["type"] == "talk":
                 self.update_talk(row)
             if row[1]["type"] == "dead" or row[1]["type"] == "execute":
@@ -124,41 +126,36 @@ class Villager(object):
         self.isVote = False
         self.isBecause = False
         self.isRequestVote = False
+        self.vote_list = []
+        self.talk_voteop = None
+        self.because_list = []
         self.isDivine = False
+        self.istalk_vote = [False for _ in range(self.playerNum)]
 
     def vote(self):
-        return int(self.voteop)+1
+        return int(self.voteop) + 1
 
     def finish(self):
-        self.divineans = []
         return None
 
     def talk(self):
-        if not self.isCo and self.day == 1 and random.uniform(0, 1) <= 0.5:
+        if not self.isCo and self.day == 1:
             self.isCo = True
             return cb.COMINGOUT(self.agentIdx, "VILLAGER")
-        elif not self.isVote:
-            if int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1]) == 0:
-                return cb.skip()
-            self.voteop = int(sorted(self.suspicion.items(),
-                                     key=lambda x: x[1])[-1][0])
-            if self.old_voteop != self.voteop and self.old_voteop != None:
-                #print("change idea")
-                return cb.DISAGREE(self.myESTIMATE[0], self.myESTIMATE[1], self.myESTIMATE[2])
+        elif not self.isVote and len(self.vote_list) == self.playerNum - 1:
+            lists = []
+            for i in range(len(self.vote_list)):
+                lists.append(self.vote_list[i][1])
             self.isVote = True
-            self.old_voteop = self.voteop
-            return cb.VOTE(self.voteop)
-
-        elif not self.isBecause:
-            if int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1]) == 0:
-                return cb.skip()
-            self.isBecause = True
-            return cb.BECAUSE(cb.ESTIMATE(self.voteop, "WEREWOLF"), cb.VOTE(self.voteop))
-        elif not self.isRequestVote:
-            if int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1]) == 0:
-                return cb.skip()
-            self.isRequestVote = True
-            return cb.REQUEST("ANY", cb.VOTE(self.voteop))
+            self.talk_voteop = mode(lists)
+            for i in range(len(self.vote_list)):
+                if self.vote_list[i][1] == self.talk_voteop:
+                    self.because_list.append(self.vote_list[i][0])
+            return cb.VOTE(self.talk_voteop)
+        elif len(self.because_list) > 0 and self.isVote:
+            agent = self.because_list[0]
+            del self.because_list[0]
+            return cb.BECAUSE(cb.VOTE2(agent, self.talk_voteop), cb.VOTE(self.talk_voteop))
         elif len(self.AGREESentenceQue) >= 1:
             AGREEText = self.AGREESentenceQue.pop()
             return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])
@@ -169,9 +166,10 @@ class Villager(object):
         while True:
             if index == self.playerNum:
                 return cb.skip()
-            if not self.CoFlag[index]:
-                self.CoFlag[index] = True
-                return cb.REQUEST(index, cb.COMINGOUT(index, "ANY"))
+            if not self.istalk_vote[index]:
+                self.istalk_vote[index] = True
+                return cb.INQUIRE(index, cb.VOTE("ANY"))
             else:
                 index += 1
         return cb.skip()
+        # INQUIREをつけるか

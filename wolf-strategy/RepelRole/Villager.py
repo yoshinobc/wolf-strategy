@@ -22,21 +22,21 @@ class Villager(object):
         self.repelTargetQue = deque([])
         self.AGREESentenceQue = deque([])
         self.DISAGREESentenceQue = deque([])
-        self.RequestQue = deque([])
         self.WolfEstimateFlag = False
         self.day = -1
         self.voteIdxRandom = -1
-        print("agentidx", int(self.base_info["agentIdx"])-1)
         self.agentIdx = int(self.base_info["agentIdx"]) - 1
 
     def update_talk_repel(self, agent, content):
         if len(content) >= 2 and content[1] == "ANY":
             content[1] = str(self.agentIdx)
-        if (content[0] == "VOTE" and content[1] == str(self.agentIdx)) or (content[0] == "ESTIMATE" and str(content[1]) == self.agentIdx and (content[2] == "WEREWOLF" or content[2] == "POSSESSED")):
+        if (content[0] == "VOTE" and str(content[1]) == str(self.agentIdx)) or (content[0] == "ESTIMATE" and str(content[1]) == self.agentIdx and (content[2] == "WEREWOLF" or content[2] == "POSSESSED")):
             if agent not in self.repelTargetQue:
                 self.repelTargetQue.append(agent)
 
-    def update_talk_agreedisagree(self, idx, content):
+    def update_talk_agreedisagree(self, agent, idx, content):
+        if agent == self.agentIdx:
+            return None
         if content[0] == "ESTIMATE" and content[1] == self.mode:
             idx = str(idx).zfill(3)
             if content[2] == "WEREWOLF" or content[2] == "POSSESSED":
@@ -45,12 +45,12 @@ class Villager(object):
             else:
                 self.DISAGREESentenceQue.append(
                     ("TALK", str(self.day).zfill(2), idx))
+        if content[0] == "VOTE" and content[1] == self.mode:
+            idx = str(idx).zfill(3)
+            self.AGREESentenceQue.append(("TALK", str(self.day).zfill(2), idx))
 
     def update_talk_request(self, agent, idx, content):
-        if content[0] == "REQUEST":
-            if agent != self.mode and content[1] == self.agentIdx:
-                requestContent = splitText.splitText(content[2])
-                # 相手からのリクエストにどれぐらい答えるか
+        pass
 
     def update_talk(self, row):
         text, agent = row[1]["text"], int(row[1]["agent"])-1
@@ -59,16 +59,14 @@ class Villager(object):
             content = splitText.splitText(text)
             if len(content) != 0:
                 self.update_talk_repel(agent, content)
-                self.update_talk_agreedisagree(row[1]["idx"], content)
+                self.update_talk_agreedisagree(agent, row[1]["idx"], content)
                 self.update_talk_request(agent, row[1]["idx"], content)
                 if self.myrole == "WEREWOLF":
                     self.update_talk_divine(agent, content)
 
     def update_dead(self, row):
         if int(row[1]["agent"]) - 1 == self.mode:
-            print("dead", self.mode)
             self.repelTargetQue.remove(self.mode)
-            print("repelque", self.repelTargetQue)
 
     def update(self, base_info, diff_data, request):
         self.diff_data = diff_data
@@ -92,22 +90,14 @@ class Villager(object):
         self.isRequest = False
 
     def talk(self):
-        # 会話したかどうかをフラグでチェックする
-        if not self.isCo and self.day == 1:
+        if not self.isCo and self.day == 1 and random.uniform(0, 1) <= 0.5:
             self.isCo = True
             return cb.COMINGOUT(self.agentIdx, "VILLAGER")
         elif not self.isVote:
-            self.isVote = True
             if self.mode == -1:
-                if self.voteIdxRandom == -1:
-                    while True:
-                        self.voteIdxRandom = random.randint(
-                            0, self.playerNum - 1)
-                        if self.voteIdxRandom != self.agentIdx:
-                            break
-                print("voteidxrandom", self.voteIdxRandom)
-                return cb.VOTE(self.voteIdxRandom)
+                return cb.skip()
             else:
+                self.isVote = True
                 return cb.VOTE(self.mode)
         elif not self.isBecause:
             if self.mode == -1:
@@ -127,15 +117,14 @@ class Villager(object):
                 return cb.skip()
             else:
                 return cb.REQUEST("ANY", cb.VOTE(self.mode))
-        """
-        elif self.talkCount <= 10:
-            # INQUIREをつけるか
-            return cb.skip()
-        """
         return cb.skip()
 
     def vote(self):
         if self.mode == -1:
+            while True:
+                self.voteIdxRandom = random.randint(0, self.playerNum - 1)
+                if self.voteIdxRandom != self.agentIdx:
+                    break
             return self.voteIdxRandom
         return self.mode
 

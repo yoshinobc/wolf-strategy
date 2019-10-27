@@ -32,6 +32,7 @@ class Possessed(Villager.Villager):
                 self.update_divine(row)
 
     def dayStart(self):
+        self.talk_turn = 0
         self.day += 1
         self.voteop = None
         self.isCo = True
@@ -46,6 +47,7 @@ class Possessed(Villager.Villager):
         return None
 
     def talk(self):
+        self.talk_turn += 1
         if not self.isCo:
             self.isCo = True
             return cb.AND(cb.AGREE(self.agree_co[0], self.agree_co[1], self.agree_co[2]), cb.COMINGOUT(self.agentIdx, "SEER"))
@@ -56,7 +58,7 @@ class Possessed(Villager.Villager):
             AGREEText = self.Agreeque.pop()
             return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])
 
-        elif not self.request_vote:
+        elif not self.request_vote and self.talk_turn >= 3:
             for d in self.base_info["statusMap"].items():
                 if d[1] == "ALIVE":
                     return cb.INQUIRE(int(d[0]) - 1, cb.REQUEST(self.agentIdx, cb.VOTE("ANY")))

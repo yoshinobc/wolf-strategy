@@ -7,30 +7,12 @@ from CalmRole import Villager
 
 
 class Werewolf(Villager.Villager):
-    def __init__(self, agent_name):
-        super().__init__(agent_name)
-
-    def initialize(self, base_info, diff_data, game_setting, myrole):
-        super().initialize(base_info, diff_data, game_setting, myrole)
-
-    def update(self, base_info, diff_data, request):
-        super().update(base_info, diff_data, request)
-
-    def update_talk_request(self, content):
-        pass
-        # 他人のリクエストにどれぐらい答えるか
-
-    def dayStart(self):
-        super().dayStart()
 
     def attack(self):
         return int(sorted(self.suspicion.items(), key=lambda x: x[1])[0][0])
 
-    def finish(self):
-        return None
-
     def talk(self):
-        if not self.isCo and self.day == 1:
+        if not self.isCo and self.day == 1 and random.uniform(0, 1) <= 0.5:
             self.isCo = True
             return cb.COMINGOUT(self.agentIdx, "VILLAGER")
         elif len(self.AGREESentenceQue) >= 1:
@@ -50,12 +32,13 @@ class Werewolf(Villager.Villager):
         elif not self.isRequestVote:
             self.isRequestVote = True
             return cb.REQUEST("ANY", cb.VOTE(self.voteop))
-        for i, flag in enumerate(self.CoFlag):
-            if not flag:
-                self.CoFlag[i] = True
-                return cb.REQUEST(i, cb.COMINGOUT(i, "VILLAGER"))
-            else:
+        index = 0
+        while True:
+            if index == self.playerNum:
                 return cb.skip()
+            if not self.CoFlag[index]:
+                self.CoFlag[index] = True
+                return cb.REQUEST(index, cb.COMINGOUT(index, "ANY"))
+            else:
+                index += 1
         return cb.skip()
-
-        # INQUIREをつけるか

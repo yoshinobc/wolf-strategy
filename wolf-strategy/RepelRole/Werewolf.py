@@ -6,11 +6,6 @@ from utils import splitText
 
 
 class Werewolf(Villager.Villager):
-    def __init__(self, agent_name):
-        super().__init__(agent_name)
-
-    def initialize(self, base_info, diff_data, game_setting, myrole):
-        super().initialize(base_info, diff_data, game_setting, myrole)
 
     def update_talk_divine(self, agent, content):
         # DIVINEDで自分を村人側ってするってことは仲間だから
@@ -19,26 +14,15 @@ class Werewolf(Villager.Villager):
             self.mode = -1
             self.WolfEstimateFlag = True
 
-    def update(self, base_info, diff_data, request):
-        super().update(base_info, diff_data, request)
-
     def talk(self):
-        print(self.repelTargetQue)
-        if not self.isCo and self.day == 1:
+        if not self.isCo and self.day == 1 and random.uniform(0, 1) <= 0.5:
             self.isCo = True
             return cb.COMINGOUT(self.agentIdx, "VILLAGER")
         elif not self.isVote:
-            self.isVote = True
-            self.isVote = True
             if self.mode == -1:
-                while True:
-                    self.voteIdxRandom = random.randint(
-                        0, self.playerNum - 1)
-                    if self.voteIdxRandom != self.agentIdx:
-                        break
-                print(self.voteIdxRandom)
-                return cb.VOTE(self.voteIdxRandom)
+                return cb.skip()
             else:
+                self.isVote = True
                 return cb.VOTE(self.mode)
         elif not self.isBecause:
             self.isBecause = True
@@ -61,15 +45,8 @@ class Werewolf(Villager.Villager):
                 return cb.REQUEST("ANY", cb.VOTE(self.mode))
         else:
             return cb.skip()
-        """
-        elif self.talkCount <= 10:
-            # INQUIREをつけるか
-            return cb.skip()
-        """
 
     def attack(self):
         if self.mode == -1:
-            print("voterandom", self.voteIdxRandom)
             return self.voteIdxRandom+1
-        print("attack mode", self.mode)
         return self.mode

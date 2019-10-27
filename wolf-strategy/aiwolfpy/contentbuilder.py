@@ -17,6 +17,13 @@ def GUARD(target):
     return 'GUARD Agent[' + "{0:02d}".format(int(target)+1) + ']'
 
 
+def VOTE2(agent, target):
+    if target == "ANY":
+        return "{0:02d}".format(int(agent)+1) + ' VOTE ' + "ANY"
+    else:
+        return "{0:02d}".format(int(agent)+1) + ' VOTE Agent[' + "{0:02d}".format(int(target)+1) + ']'
+
+
 def VOTE(target):
     if target == "ANY":
         return 'VOTE ' + "ANY"

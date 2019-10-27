@@ -6,11 +6,6 @@ from FollowRole import Villager
 
 
 class Werewolf(Villager.Villager):
-    def __init__(self, agent_name):
-        self.myname = agent_name
-
-    def getName(self):
-        return self.myname
 
     def initialize(self, base_info, diff_data, game_setting, myrole):
         self.base_info = base_info
@@ -30,9 +25,7 @@ class Werewolf(Villager.Villager):
         self.request_vote = False
         self.divineop = None
         self.Agreeque = deque([])
-
-    def finish(self):
-        return None
+        self.talk_turn = 0
 
     def attack(self):
         for d in self.base_info["statusMap"].items():
@@ -40,6 +33,7 @@ class Werewolf(Villager.Villager):
                 return int(d[0]) - 1
 
     def talk(self):
+        self.talk_turn += 2
         if not self.isCo:
             self.isCo = True
             return cb.AND(cb.AGREE(self.agree_co[0], self.agree_co[1], self.agree_co[2]), cb.COMINGOUT(self.agentIdx, "VILLAGER"))
@@ -50,7 +44,7 @@ class Werewolf(Villager.Villager):
             AGREEText = self.Agreeque.pop()
             return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])
 
-        elif not self.request_vote:
+        elif not self.request_vote and self.talk_turn >= 3:
             for d in self.base_info["statusMap"].items():
                 if d[1] == "ALIVE":
                     return cb.INQUIRE(int(d[0])-1, cb.REQUEST(self.agentIdx, cb.VOTE("ANY")))

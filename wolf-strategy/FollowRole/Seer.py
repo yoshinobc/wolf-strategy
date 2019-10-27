@@ -6,14 +6,6 @@ from FollowRole import Villager
 
 
 class Seer(Villager.Villager):
-    def __init__(self, agent_name):
-        super().__init__(agent_name)
-
-    def getName(self):
-        return self.myname
-
-    def initialize(self, base_info, diff_data, game_setting, myrole):
-        super().initialize(base_info, diff_data, game_setting, myrole)
 
     def update_divine(self, row):
         text = row[1]["text"]
@@ -32,6 +24,7 @@ class Seer(Villager.Villager):
                 self.update_divine(row)
 
     def dayStart(self):
+        self.talk_turn = 0
         self.day += 1
         self.voteop = None
         self.isCo = True
@@ -52,10 +45,8 @@ class Seer(Villager.Villager):
                 if d[1] == "ALIVE":
                     return int(d[0]) - 1
 
-    def finish(self):
-        return None
-
     def talk(self):
+        self.talk_turn += 1
         if not self.isCo:
             self.isCo = True
             return cb.AND(cb.AGREE(self.agree_co[0], self.agree_co[1], self.agree_co[2]), cb.COMINGOUT(self.agentIdx, self.myrole))
@@ -65,7 +56,7 @@ class Seer(Villager.Villager):
         elif len(self.Agreeque) >= 1:
             AGREEText = self.Agreeque.pop()
             return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])
-        elif not self.request_vote:
+        elif not self.request_vote and self.talk_turn >= 3:
             for d in self.base_info["statusMap"].items():
                 if d[1] == "ALIVE":
                     return cb.INQUIRE(int(d[0]) - 1, cb.REQUEST(self.agentIdx, cb.VOTE("ANY")))
