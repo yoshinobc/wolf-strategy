@@ -6,6 +6,12 @@ Aiwolf-strategies with personality
 # Description
 There are four types of agents in this repository.
 
+## 使用したライブラリ
+ディレクトリにあるaiwolfpyはk-haradaさんの[AIWolfPy](https://github.com/k-harada/AIWolfPy)をもとにして作られています．
+## エージェントの実行方法
+`bash run.sh`
+
+AIWolf-ver0.5.6/run.shを実行することにより，サンプルエージェント1体，それぞれのオリジナルエージェント0~4体をゲームに加えて自動でAutoStarter.iniに記載されたゲーム数*run.shに記載されたmax数分のゲームを実行します．
 ## 1.Repel Agent
 自分に対して敵対的行動を起こしたエージェントを狙う．
 ### 主要な引数

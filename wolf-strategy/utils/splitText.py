@@ -1,37 +1,4 @@
 import re
-# ANYに対応する
-
-
-def parse_text_sub(text):
-    stack = []
-    for i, c in enumerate(text):
-        if c == '(':
-            stack.append(i)
-        elif c == ')' and stack:
-            start = stack.pop()
-            yield (len(stack), text[start + 1:i])
-
-
-def parse_text(text):
-    text = "(" + text + ")"
-    a = list(parse_text_sub(text))
-    clist = []
-    for i, content in a:
-        clist.append(content)
-    return list(set(clist))
-    """
-    for i, content in a:
-        b = re.search('\(([^)]+)', content)
-        if b == None:
-            if content.startswith("("):
-                continue
-            clist.append(content)
-        else:
-            if b.group().startswith("("):
-                continue
-            clist.append(b.group())
-    clist = list(map(lambda i: i, clist))
-    """
 
 
 def splitText(text):
@@ -149,3 +116,22 @@ def splitText(text):
         return [topic, sentence1, sentence2]
     else:
         return []
+
+
+def parse_text_sub(text):
+    stack = []
+    for i, c in enumerate(text):
+        if c == '(':
+            stack.append(i)
+        elif c == ')' and stack:
+            start = stack.pop()
+            yield (len(stack), text[start + 1:i])
+
+
+def parse_text(text):
+    text = "(" + text + ")"
+    a = list(parse_text_sub(text))
+    clist = []
+    for i, content in a:
+        clist.append(content)
+    return list(set(clist))
