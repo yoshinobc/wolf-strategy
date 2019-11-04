@@ -11,7 +11,7 @@ import RepelRole.Possessed
 
 import aiwolfpy
 import aiwolfpy.contentbuilder as cb
-
+import sys
 myname = 'Liar'
 
 
@@ -129,8 +129,11 @@ class Liar(object):
         return self.role.finish()
 
 
-agent = Liar(myname)
+args = sys.argv
+if len(args) == 7:    
+    myname = myname+str(args[6])
 
+agent = Liar(myname)
 
 # run
 if __name__ == '__main__':

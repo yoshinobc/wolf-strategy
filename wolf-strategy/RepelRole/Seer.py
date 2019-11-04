@@ -71,7 +71,7 @@ class Seer(Villager.Villager):
     def divine(self):
         if self.mode == -1:
             return random.randint(1, self.playerNum)
-        return self.mode
+        return self.mode+1
 
     def finish(self):
         return None

@@ -125,8 +125,8 @@ class Villager(object):
                 self.voteIdxRandom = random.randint(0, self.playerNum - 1)
                 if self.voteIdxRandom != self.agentIdx:
                     break
-            return self.voteIdxRandom
-        return self.mode
+            return self.voteIdxRandom + 1
+        return self.mode + 1
 
     def finish(self):
         return None

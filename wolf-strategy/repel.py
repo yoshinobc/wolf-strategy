@@ -11,6 +11,7 @@ import RepelRole.Possessed
 
 import aiwolfpy
 import aiwolfpy.contentbuilder as cb
+import sys
 
 myname = 'REPEL'
 
@@ -128,9 +129,11 @@ class Repel(object):
     def finish(self):
         return self.role.finish()
 
+args = sys.argv
+if len(args) == 7:
+    myname = myname+str(args[6])
 
 agent = Repel(myname)
-
 
 # run
 if __name__ == '__main__':

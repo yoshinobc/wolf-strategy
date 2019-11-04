@@ -9,9 +9,14 @@ from CalmRole import Villager
 class Possessed(Villager.Villager):
 
     def talk(self):
-        if not self.isCo and self.day == 1 and random.uniform(0, 1) <= 0.8:
+        if self.co_rate != 1:
+            self.co_rate = random.uniform(0, 1)
+        if not self.isCo and self.day == 1 and self.co_rate >= 0.3:
             self.isCo = True
-            return cb.COMINGOUT(self.agentIdx, "SEER")
+            if self.co_rate == 2:
+                return cb.AND(cb.AGREE(self.agree_co[0], self.agree_co[1], self.agree_co[2]), cb.COMINGOUT(self.agentIdx, "SEER"))
+            else:
+                return cb.COMINGOUT(self.agentIdx, "SEER")
         elif len(self.AGREESentenceQue) >= 1:
             AGREEText = self.AGREESentenceQue.pop()
             return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])

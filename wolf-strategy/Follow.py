@@ -11,7 +11,7 @@ import FollowRole.Possessed
 
 import aiwolfpy
 import aiwolfpy.contentbuilder as cb
-
+import sys
 myname = 'Follow'
 
 
@@ -127,8 +127,11 @@ class Follow(object):
         return self.role.finish()
 
 
-agent = Follow(myname)
+args = sys.argv
+if len(args) == 7:
+    myname = myname+str(args[6])
 
+agent = Follow(myname)
 
 # run
 if __name__ == '__main__':

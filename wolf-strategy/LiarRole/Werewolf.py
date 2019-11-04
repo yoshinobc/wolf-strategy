@@ -9,12 +9,18 @@ from LiarRole import Villager
 class Werewolf(Villager.Villager):
 
     def attack(self):
-        return int(sorted(self.suspicion.items(), key=lambda x: x[1])[0][0])
+        return int(sorted(self.suspicion.items(), key=lambda x: x[1])[0][0]) + 1
 
     def talk(self):
-        if not self.isCo and self.day == 1:
+        if self.co_rate != 2:
+            self.co_rate = random.uniform(0, 1)
+        if not self.isCo and self.day == 1 and self.co_rate >= 0.5:
             self.isCo = True
-            return cb.COMINGOUT(self.agentIdx, "VILLAGER")
+            if self.co_rate == 2:
+                return cb.AND(cb.AGREE(self.agree_co[0], self.agree_co[1], self.agree_co[2]), cb.COMINGOUT(self.agentIdx, "VILLAGER"))
+            else:
+                return cb.COMINGOUT(self.agentIdx, "VILLAGER")
+
         elif not self.isVote and len(self.vote_list) == self.playerNum - 1:
             lists = []
             for i in range(len(self.vote_list)):

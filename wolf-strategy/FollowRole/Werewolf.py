@@ -3,6 +3,7 @@ from collections import deque
 from utils import splitText
 from aiwolfpy import contentbuilder as cb
 from FollowRole import Villager
+# calmのdivineansがoutofrange
 
 
 class Werewolf(Villager.Villager):
@@ -30,7 +31,7 @@ class Werewolf(Villager.Villager):
     def attack(self):
         for d in self.base_info["statusMap"].items():
             if d[1] == "ALIVE":
-                return int(d[0]) - 1
+                return int(d[0])
 
     def talk(self):
         self.talk_turn += 2
@@ -47,6 +48,6 @@ class Werewolf(Villager.Villager):
         elif not self.request_vote and self.talk_turn >= 3:
             for d in self.base_info["statusMap"].items():
                 if d[1] == "ALIVE":
-                    return cb.INQUIRE(int(d[0])-1, cb.REQUEST(self.agentIdx, cb.VOTE("ANY")))
+                    return cb.REQUEST(int(d[0])-1, cb.REQUEST(self.agentIdx, cb.VOTE("ANY")))
         else:
             return cb.skip()

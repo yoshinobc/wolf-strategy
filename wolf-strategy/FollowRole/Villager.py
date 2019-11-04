@@ -64,7 +64,7 @@ class Villager(object):
     def dayStart(self):
         self.day += 1
         self.voteop = None
-        self.isCo = True
+        self.isCo = False
         self.isVote = False
         self.request_vote = False
         self.divineop = None
@@ -74,10 +74,9 @@ class Villager(object):
 
     def vote(self):
         if self.voteop == None:
-            print("random")
             for d in self.base_info["statusMap"].items():
                 if d[1] == "ALIVE" and int(d[0])-1 != int(self.agentIdx):
-                    return int(d[0]) - 1
+                    return int(d[0])
 
         return int(self.voteop)+1
 
@@ -86,7 +85,7 @@ class Villager(object):
 
     def talk(self):
         self.talk_turn += 1
-        if not self.isCo:
+        if self.isCo:
             self.isCo = True
             return cb.AND(cb.AGREE(self.agree_co[0], self.agree_co[1], self.agree_co[2]), cb.COMINGOUT(self.agentIdx, self.myrole))
         elif not self.isVote and self.voteop != None:
@@ -99,6 +98,6 @@ class Villager(object):
         elif not self.request_vote and self.talk_turn >= 3:
             for d in self.base_info["statusMap"].items():
                 if d[1] == "ALIVE":
-                    return cb.INQUIRE(int(d[0])-1, cb.REQUEST(self.agentIdx, cb.VOTE("ANY")))
+                    return cb.REQUEST(int(d[0])-1, cb.REQUEST(self.agentIdx, cb.VOTE("ANY")))
         else:
             return cb.skip()

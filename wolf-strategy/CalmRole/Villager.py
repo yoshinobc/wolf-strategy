@@ -29,7 +29,7 @@ class Villager(object):
         self.myESTIMATE = None
         self.RequestQue = deque([])
         self.day = -1
-        self.divineans = []
+        self.divineans = None
         self.CoFlag = [False for _ in range(self.playerNum)]
 
     def update_talk_suspicion_villager(self, agent, content):
@@ -39,9 +39,9 @@ class Villager(object):
         if content[0] == "ESTIMATE" and content[2] == "VILLAGER":
             self.suspicion[str(content[1])] -= 1
         if content[0] == "ESTIMATE" and content[1] == self.agentIdx and content[2] == self.myrole:
-            self.suspicion[str(agent)] += 10
+            self.suspicion[str(agent)] += 5
         if content[0] == "COMINGOUT" and content[2] == "WEREWOLF":
-            self.suspicion[str(agent)] += 10
+            self.suspicion[str(agent)] += 5
         if content[0] == "COMINGOUT" and content[2] == "SEER":
             self.suspicion[str(agent)] += 2
 
@@ -80,8 +80,13 @@ class Villager(object):
                 self.DISAGREESentenceQue.append(
                     ("TALK", str(self.day).zfill(2), idx))
 
-    def update_talk_request(self, content):
-        pass
+    def update_talk_request(self, row, content):
+        idx = str(row[1]["idx"]).zfill(3)
+        content_ = splitText.splitText(content[2])
+        if len(content_) >= 1:
+            if content_[0] == "COMINGOUT" and (content_[1] == "ANY" or content_[1] == self.agentIdx):
+                self.co_rate = 2
+                self.agree_co = ("TALK", str(self.day).zfill(2), idx)
 
     def update_talk(self, row):
         text, agent = row[1]["text"], int(row[1]["agent"]) - 1
@@ -94,17 +99,11 @@ class Villager(object):
                 else:
                     self.update_talk_suspicion_werewolf(agent, content)
                 self.update_talk_agreedisagree(agent, row[1]["idx"], content)
-                self.update_talk_request(row)
+                if content[0] == "REQUEST" and (content[1] == "ANY" or content[1] == self.agentIdx):
+                    self.update_talk_request(row, content)
 
     def update_dead(self, row):
         self.suspicion[str(int(row[1]["agent"]) - 1)] -= 1000
-
-    def update_divine(self, row):
-        text = row[1]["text"]
-        content = splitText.splitText(text)
-        if content[2] == "WEREWOLF" or content[2] == "POSSESSED":
-            self.suspicion[str(content[1])] += 100
-        self.divineans.append((content[1], content[2]))
 
     def update(self, base_info, diff_data, request):
         self.diff_data = diff_data
@@ -125,25 +124,28 @@ class Villager(object):
         self.isBecause = False
         self.isRequestVote = False
         self.isDivine = False
+        self.co_rate = random.uniform(0, 1)
 
     def vote(self):
         return int(self.voteop)+1
 
     def finish(self):
-        self.divineans = []
         return None
 
     def talk(self):
-        if not self.isCo and self.day == 1 and random.uniform(0, 1) <= 0.5:
-            self.isCo = True
-            return cb.COMINGOUT(self.agentIdx, "VILLAGER")
+        if self.co_rate != 2:
+            self.co_rate = random.uniform(0, 1)
+        if not self.isCo and self.day == 1 and self.co_rate >= 0.5:
+            if self.co_rate == 2:
+                return cb.AND(cb.AGREE(self.agree_co[0], self.agree_co[1], self.agree_co[2]), cb.COMINGOUT(self.agentIdx, "VILLAGER"))
+            else:
+                return cb.COMINGOUT(self.agentIdx, "VILLAGER")
         elif not self.isVote:
             if int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][1]) == 0:
                 return cb.skip()
             self.voteop = int(sorted(self.suspicion.items(),
                                      key=lambda x: x[1])[-1][0])
             if self.old_voteop != self.voteop and self.old_voteop != None:
-                #print("change idea")
                 return cb.DISAGREE(self.myESTIMATE[0], self.myESTIMATE[1], self.myESTIMATE[2])
             self.isVote = True
             self.old_voteop = self.voteop

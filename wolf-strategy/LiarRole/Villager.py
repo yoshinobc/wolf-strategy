@@ -54,8 +54,13 @@ class Villager(object):
         if content[0] == "ESTIMATE" and content[1] == self.agentIdx and content[2] == "VILLAGER":
             self.suspicion[str(agent)] -= 5
 
-    def update_talk_request(self, content):
-        pass
+    def update_talk_request(self, row, content):
+        idx = str(row[1]["idx"]).zfill(3)
+        content_ = splitText.splitText(content[2])
+        if len(content_) >= 1:
+            if content_[0] == "COMINGOUT" and (content_[1] == "ANY" or content_[1] == self.agentIdx):
+                self.co_rate = 2
+                self.agree_co = ("TALK", str(self.day).zfill(2), idx)
 
     def update_talk_agreedisagree(self, agent, idx, content):
         idx = str(idx).zfill(3)
@@ -95,7 +100,8 @@ class Villager(object):
                 else:
                     self.update_talk_suspicion_werewolf(agent, content)
                 self.update_talk_agreedisagree(agent, row[1]["idx"], content)
-                self.update_talk_request(row)
+                if content[0] == "REQUEST" and (content[1] == "ANY" or content[1] == self.agentIdx):
+                    self.update_talk_request(row, content)
 
     def update_dead(self, row):
         self.suspicion[str(int(row[1]["agent"]) - 1)] -= 1000
@@ -120,7 +126,7 @@ class Villager(object):
 
     def dayStart(self):
         self.day += 1
-        self.voteop = 1
+        self.voteop = -1
         self.old_voteop = None
         self.isCo = False
         self.isVote = False
@@ -128,20 +134,27 @@ class Villager(object):
         self.isRequestVote = False
         self.vote_list = []
         self.talk_voteop = None
+        self.co_rate = random.random(0, 1)
         self.because_list = []
         self.isDivine = False
         self.istalk_vote = [False for _ in range(self.playerNum)]
 
     def vote(self):
-        return int(self.voteop) + 1
+        return int(sorted(self.suspicion.items(),
+                          key=lambda x: x[1])[-1][0]) + 1
 
     def finish(self):
         return None
 
     def talk(self):
-        if not self.isCo and self.day == 1:
+        if self.co_rate != 2:
+            self.co_rate = random.uniform(0, 1)
+        if not self.isCo and self.day == 1 and self.co_rate >= 0.5:
             self.isCo = True
-            return cb.COMINGOUT(self.agentIdx, "VILLAGER")
+            if self.co_rate == 2:
+                return cb.AND(cb.AGREE(self.agree_co[0], self.agree_co[1], self.agree_co[2]), cb.COMINGOUT(self.agentIdx, "VILLAGER"))
+            else:
+                return cb.COMINGOUT(self.agentIdx, "VILLAGER")
         elif not self.isVote and len(self.vote_list) == self.playerNum - 1:
             lists = []
             for i in range(len(self.vote_list)):

@@ -11,7 +11,7 @@ import CalmRole.Possessed
 
 import aiwolfpy
 import aiwolfpy.contentbuilder as cb
-
+import sys
 myname = 'CALM'
 
 
@@ -126,7 +126,9 @@ class Calm(object):
     def finish(self):
         return self.role.finish()
 
-
+args = sys.argv
+if len(args) == 7:
+    myname = myname+str(args[6])
 agent = Calm(myname)
 
 

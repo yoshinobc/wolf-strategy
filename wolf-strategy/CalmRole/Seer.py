@@ -3,16 +3,23 @@ from collections import deque
 from utils import splitText
 from aiwolfpy import contentbuilder as cb
 from CalmRole import Villager
-# ANYを対応させる
+# calm divineans
 
 
 class Seer(Villager.Villager):
+
+    def update_divine(self, row):
+        text = row[1]["text"]
+        content = splitText.splitText(text)
+        if content[2] == "WEREWOLF" or content[2] == "POSSESSED":
+            self.suspicion[str(content[1])] += 100
+        self.divineans = (content[1], content[2])
 
     def update_talk_agreedisagree(self, agent, idx, content):
         super().update_talk_agreedisagree(agent, idx, content)
         if content[0] == "REQUEST" and content[1] == self.agentIdx:
             text2 = content[2]
-            content2 = splitText(text2)
+            content2 = splitText.splitText(text2)
             if content2[0] == "DIVINE":
                 if content2[1] == int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]):
                     self.requestdivine = content2[1]
@@ -28,14 +35,17 @@ class Seer(Villager.Villager):
 
     def divine(self):
         if self.requestdivine == -1:
-            return int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0])
+            return int(sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]) + 1
         else:
-            return self.requestdivine
+            return int(self.requestdivine) + 1
 
     def talk(self):
         if not self.isCo and self.day == 1:
             self.isCo = True
-            return cb.COMINGOUT(self.agentIdx, "SEER")
+            if self.co_rate == 2:
+                return cb.AND(cb.AGREE(self.agree_co[0], self.agree_co[1], self.agree_co[2]), cb.COMINGOUT(self.agentIdx, "SEER"))
+            else:
+                return cb.COMINGOUT(self.agentIdx, "SEER")
         elif len(self.AGREESentenceQue) >= 1:
             AGREEText = self.AGREESentenceQue.pop()
             return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])
@@ -55,9 +65,9 @@ class Seer(Villager.Villager):
             return cb.REQUEST("ANY", cb.VOTE(self.voteop))
         elif not self.isDivine:
             self.isDivine = True
-            agent, target = self.divineans[0][0], self.divineans[0][1]
-            self.divineans = []
-            return cb.DIVINED(agent, target)
+            agent, role = self.divineans[0], self.divineans[1]
+            self.divineans = None
+            return cb.DIVINED(agent, role)
         index = 0
         while True:
             if index == self.playerNum:

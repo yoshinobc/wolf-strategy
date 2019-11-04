@@ -61,7 +61,7 @@ class Possessed(Villager.Villager):
         elif not self.request_vote and self.talk_turn >= 3:
             for d in self.base_info["statusMap"].items():
                 if d[1] == "ALIVE":
-                    return cb.INQUIRE(int(d[0]) - 1, cb.REQUEST(self.agentIdx, cb.VOTE("ANY")))
+                    return cb.REQUEST(int(d[0]) - 1, cb.REQUEST(self.agentIdx, cb.VOTE("ANY")))
         elif not self.isdivine:
             self.isdivine = True
             for d in self.base_info["statusMap"].items():

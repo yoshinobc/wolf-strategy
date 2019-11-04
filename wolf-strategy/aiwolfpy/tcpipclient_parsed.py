@@ -20,6 +20,8 @@ def connect_parse(agent):
     parser.add_argument('-p', type=int, action='store', dest='port')
     parser.add_argument('-h', type=str, action='store', dest='hostname')
     parser.add_argument('-r', type=str, action='store', dest='role', default='none')
+    
+    parser.add_argument('-n',type=str, action='store', dest='name', default ='')
     input_args = parser.parse_args()
     aiwolf_host = input_args.hostname
     aiwolf_port = input_args.port

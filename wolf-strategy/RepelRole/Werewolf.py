@@ -49,4 +49,4 @@ class Werewolf(Villager.Villager):
     def attack(self):
         if self.mode == -1:
             return self.voteIdxRandom+1
-        return self.mode
+        return self.mode+1
