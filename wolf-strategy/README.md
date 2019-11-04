@@ -24,9 +24,9 @@ There are four types of agents in this repository.
 * 周りの人に投票を依頼
 * 自分の敵対相手がWEREWOLFであると発言
 #### SEER
-
+* 自分に対して投票したエージェントを占い，結果によらず人狼判定だと発言
 #### ATTACK
-
+* 自分に対して投票したエージェントを攻撃
 ## 2. Calm Agent
 自分の戦略である疑い度合いに従って行動を決定する.
 ### 主要な引数
@@ -56,8 +56,9 @@ There are four types of agents in this repository.
 * 発言のAGREE,DISAGREE
 * まだCOしていないエージェントがいた時にCOするようにREQUEST
 #### SEER
-
+* 疑い度合いが一番高いプレイヤーに占い,結果をそのまま発言
 #### ATTACK
+* 疑い度合いが一番高いプレイヤーに攻撃
 ## 3.Follow Agent
 自分の意思を持たずに相手エージェントのREQUESTに従うように行動する．
 ### 主要な引数
@@ -71,7 +72,9 @@ There are four types of agents in this repository.
 * AGREEQueに入っている発言に同意
 * まだ投票REQUESTを示していないエージェントにどこに投票すればいいのか聞く
 #### SEER
+* REQUESTされたエージェントを占い，結果をそのまま発言
 #### ATTACK
+* ランダムに攻撃
 ## 4.Liar Agent
 基本はCalmエージェントと同じだが，TALK時にあえて嘘をつくようになっている．
 ### 主要な引数
@@ -79,4 +82,15 @@ There are four types of agents in this repository.
 * because_list : 投票先を発言するときの，根拠となる相手エージェントの投票先をいれる
 ### 戦略
 #### VOTE
-*
+* 疑い度合いが一番高いプレイヤーに投票
+#### TALK
+* 一定確率で村人CO（占い師，狂人の場合は占いCO）
+* 全員が投票先を示している時に，一番多い投票先に投票するように発言
+* 上の投票発言に基づく投票理由を発言
+* AGREEQueに入っている発言に同意
+* DISAGREEQueに入っている発言に非同意
+* まだ，投票先を発言していないプレイヤーに対してどこに投票する予定か聞く
+#### SEER
+* 疑い度合いが一番高いプレイヤーに占い,占い結果によらず．占った相手に人狼判定
+#### ATTACK
+* 疑い度合いが一番高いプレイヤーに攻撃

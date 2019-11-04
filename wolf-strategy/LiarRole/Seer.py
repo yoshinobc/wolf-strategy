@@ -53,8 +53,8 @@ class Seer(Villager.Villager):
             return cb.VOTE(self.talk_voteop)
         elif not self.isDivine:
             self.isDivine = True
-            agent, target = self.divineans[0][0], self.divineans[0][1]
-            self.divineans = []
+            agent, target = int(
+                sorted(self.suspicion.items(), key=lambda x: x[1])[-1][0]), "WEREWOLF"
             return cb.DIVINED(agent, target)
         elif len(self.because_list) > 0 and self.isVote:
             agent = self.because_list[0]
