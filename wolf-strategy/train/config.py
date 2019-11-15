@@ -5,9 +5,7 @@ class Config(object):
         self.OUTPUT_PATH = "result"
         self.BATCH_SIZE = 128
         self.TRAIN_PAR_TEST = 0.9
-        self.MAX_LEN = 300
-        self.HIDDEN_UNITS = 800
-        self.OUTPUT_DIM = 200
+        self.LEARNING_RATE = 0.0008
         self.DATA_PATH = "result/data"
         self.INIT_DATA = True
 

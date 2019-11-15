@@ -15,6 +15,8 @@ import os
 from tqdm import tqdm
 import pickle
 from keras.utils import plot_model
+from utils import pre1
+from utils import pre2
 
 
 class strategyLSTM(object):
@@ -104,10 +106,12 @@ class strategyLSTM(object):
         self.Y_train, self.Y_test = texts_y[:int(len(
             texts)*self.config.TRAIN_PAR_TEST)], texts_y[int(len(texts)*self.config.TRAIN_PAR_TEST) + 1:]
         print("init tokenizer")
+
         self.tokenizer = Tokenizer()
         self.tokenizer.fit_on_texts(X_train)
+        print(self.tokenizer.word_counts)
         print("fit tokenizer")
-        X_train = self.tokenizer.texts_to_sequences(X_train)
+        X_train = self.toåkenizer.texts_to_sequences(X_train)
         X_test = self.tokenizer.texts_to_sequences(X_test)
         self.X_train = pad_sequences(X_train, maxlen=self.config.MAX_LEN)
         self.X_test = pad_sequences(X_test, maxlen=self.config.MAX_LEN)
@@ -135,21 +139,6 @@ class strategyLSTM(object):
         model.compile(loss="binary_crossentropy",
                       optimizer="adam", metrics=["accuracy"])
         return model
-        """
-
-        main_input = Input(shape=(np.array(self.X_train).shape[1],))
-        embedding = Embedding(
-            input_dim=self.config.MAX_LEN,
-            output_dim=self.config.HIDDEN_UNITS,
-            trainable=False,
-            mask_zero=True
-        )(main_input)
-        lstm = LSTM(32)(embedding)
-        main_output = Dense(25)(lstm)
-        model = Model(inputs=main_input, outputs=main_output)
-        model.compile(loss="mse", optimizer="adam")
-        return model
-        """
 
     def train(self):
         if self.config.INIT_DATA:
