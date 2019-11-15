@@ -35,13 +35,14 @@ class strategyCNN(object):
         for name in tqdm(file_names):
             pre1 = preprocess1.preprocess1()
             pre1.update(name)
-            X_train.append(pre1.f_map)
-            Y_train.append([
-                pre1.y_map1,
-                pre1.y_map2,
-                pre1.y_map3,
-                pre1.y_map4,
-                pre1.y_map5])
+            if pre1.isfinish:
+                X_train.append(pre1.f_map)
+                Y_train.append([
+                    pre1.y_map1,
+                    pre1.y_map2,
+                    pre1.y_map3,
+                    pre1.y_map4,
+                    pre1.y_map5])
         self.X_train, self.X_test = X_train[:int(len(
             X_train)*self.config.TRAIN_PAR_TEST)], X_train[int(len(X_train)*self.config.TRAIN_PAR_TEST) + 1:]
         self.Y_train, self.Y_test = Y_train[:int(len(

@@ -25,6 +25,7 @@ class preprocess1(object):
             (self.agentNum, self.agentNum, len(self.content_map.keys())))
         self.y_map = np.zeros((5, 5))
         self.is_divine = False
+        self.is_finish = False
 
     def update_result(self):
         self.y_map = np.array(self.y_map).flatten()
@@ -33,6 +34,7 @@ class preprocess1(object):
         self.y_map3 = self.y_map[10:15]
         self.y_map4 = self.y_map[15:20]
         self.y_map5 = self.y_map[20:25]
+        self.is_finish = True
 
     def update_status(self, contents):
         if "Sample" in contents[5]:
