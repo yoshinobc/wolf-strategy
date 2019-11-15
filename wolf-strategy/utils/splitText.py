@@ -91,8 +91,9 @@ def splitText(text):
         sentence2 = temp[2]
         return [topic, sentence1, sentence2]
     elif topic == "BECAUSE":
-        sentence1 = temp[1]
-        sentence2 = temp[2]
+        group = re.findall(r'\(.+?\)', text)
+        sentence1 = group[0]
+        sentence2 = group[1]
         return [topic, sentence1, sentence2]
     elif topic == "DAY":
         day = int(temp[1])
@@ -111,6 +112,7 @@ def splitText(text):
         sentences = parse_text(temp[1])
         return [topic, sentences]
     elif topic == "XOR":
+        return []
         sentence1 = temp[1]
         sentence2 = temp[2]
         return [topic, sentence1, sentence2]

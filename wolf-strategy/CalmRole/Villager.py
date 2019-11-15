@@ -136,6 +136,7 @@ class Villager(object):
         if self.co_rate != 2:
             self.co_rate = random.uniform(0, 1)
         if not self.isCo and self.day == 1 and self.co_rate >= 0.5:
+            self.isCo = True
             if self.co_rate == 2:
                 return cb.AND(cb.AGREE(self.agree_co[0], self.agree_co[1], self.agree_co[2]), cb.COMINGOUT(self.agentIdx, "VILLAGER"))
             else:

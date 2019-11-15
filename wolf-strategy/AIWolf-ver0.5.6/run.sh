@@ -6,7 +6,7 @@ Agents=(
     [2]="Calm.py"
     [3]="Liar.py"
 ) #接続するエージェント
-max=10000 #実行するAutoStarter.shの回数(ゲームの実行回数はmax*100回)
+max=5000 #実行するAutoStarter.shの回数(ゲームの実行回数はmax*100回)
 for ((i=0;i<$max;i++));do
     num1=`expr $RANDOM % 4`
     num2=`expr $RANDOM % 4`
