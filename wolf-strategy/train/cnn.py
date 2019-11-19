@@ -22,12 +22,12 @@ from tqdm import tqdm
 import pickle
 from keras.utils import plot_model
 from utils import preprocess1
-import matplotlib.pyplot as plt
-import pandas as pd
-import seaborn as sns
+#import matplotlib.pyplot as plt
+#import pandas as pd
+#import seaborn as sns
 import random
 
-
+"""
 def evaluate(y_true, y_pred, name):
     labels = sorted(list(set(y_true)))
     cmx_data = confusion_matrix(y_true, y_pred, labels=labels)
@@ -38,8 +38,9 @@ def evaluate(y_true, y_pred, name):
     sns.heatmap(df_cmx, annot=True)
     plt.savefig(name)
     plt.show()
+"""
 
-
+"""
 def compare_TV(history):
     import matplotlib.pyplot as plt
 
@@ -66,7 +67,7 @@ def compare_TV(history):
     plt.legend()
 
     plt.savefig("valid_loss.png")
-
+"""
 
 class strategyCNN(object):
     def __init__(self, config):
@@ -211,7 +212,8 @@ class strategyCNN(object):
             "output_4": "categorical_crossentropy",
             "output_5": "categorical_crossentropy"
         },
-            optimizer=opt
+            optimizer=opt,
+            metrics = ["accuracy", "accuracy", "accuracy", "accuracy", "accuracy"]
         )
         self.train_iterations()
 
@@ -302,16 +304,16 @@ class strategyCNN(object):
         print("pred", self.y_pred_1[:20])
         print("pred2", self.y_pred_2[:20])
         print("pred3", self.y_pred_3[:20])
-        evaluate(self.Y_test_1, self.y_pred_1, "test1.png")
-        evaluate(self.Y_test_2, self.y_pred_2, "test2.png")
-        evaluate(self.Y_test_3, self.y_pred_3, "test3.png")
-        evaluate(self.Y_test_4, self.y_pred_4, "test4.png")
-        evaluate(self.Y_test_5, self.y_pred_5, "test5.png")
+        #evaluate(self.Y_test_1, self.y_pred_1, "test1.png")
+        #evaluate(self.Y_test_2, self.y_pred_2, "test2.png")
+        #evaluate(self.Y_test_3, self.y_pred_3, "test3.png")
+        #evaluate(self.Y_test_4, self.y_pred_4, "test4.png")
+        #evaluate(self.Y_test_5, self.y_pred_5, "test5.png")
         #with open("history.pkl","wb") as f:
         #    pickle.dump(history, f)
         pickle.dump(history, open(self.config.OUTPUT_PATH +"/data/history.pkl", mode="wb"))
-        print(confusion_matrix(self.Y_test_1, self.y_pred_1))
-        print(confusion_matrix(self.Y_test_2, self.y_pred_2))
-        print(confusion_matrix(self.Y_test_3, self.y_pred_3))
-        print(confusion_matrix(self.Y_test_4, self.y_pred_4))
-        print(confusion_matrix(self.Y_test_5, self.y_pred_5))
+        #print(confusion_matrix(self.Y_test_1, self.y_pred_1))
+        #print(confusion_matrix(self.Y_test_2, self.y_pred_2))
+        #print(confusion_matrix(self.Y_test_3, self.y_pred_3))
+        #print(confusion_matrix(self.Y_test_4, self.y_pred_4))
+        #print(confusion_matrix(self.Y_test_5, self.y_pred_5))
