@@ -1,6 +1,6 @@
 class Config(object):
     def __init__(self):
-        self.EPOCH = 50
+        self.EPOCH = 10
         self.LOG_PATH = "../AIWolf-ver0.5.6/log/*/*"
         self.OUTPUT_PATH = "result"
         self.BATCH_SIZE = 128
@@ -8,7 +8,7 @@ class Config(object):
         self.LEARNING_RATE = 0.0008
         self.DATA_PATH = "result/data"
         self.INIT_DATA = True
-        self.IS_FINISH_TRAIN = True
+        self.IS_FINISH_TRAIN = False
     def output_config(self):
         text = "EPOCH: " + str(self.EPOCH) + "\n"
         text += "OUTPUT_PATH: " + self.OUTPUT_PATH + "\n"
