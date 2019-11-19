@@ -130,6 +130,28 @@ class strategyCNN(object):
         pickle.dump(self.Y_test_5, open(self.config.OUTPUT_PATH +
                                         "/data/Y_test_5.pkl", mode="wb"))
 
+    def build_network_dense(self):
+        main_input = Input()
+        x = Dense(200, input_dim=len(self.X_train),
+                  Activation="relu")(main_input)
+        x = Dense(100, input_dim=200,
+                  Activation="relu")(x)
+        x = Dense(50, input_dim=100,
+                  Activation="relu")(x)
+        output_1 = Dense(5, Activation="softmax",
+                         input_dim=50, name="output_1")(x)
+        output_2 = Dense(5, Activation="softmax",
+                         input_dim=50, name="output_1")(x)
+        output_3 = Dense(5, Activation="softmax",
+                         input_dim=50, name="output_1")(x)
+        output_4 = Dense(5, Activation="softmax",
+                         input_dim=50, name="output_1")(x)
+        output_5 = Dense(5, Activation="softmax",
+                         input_dim=50, name="output_1")(x)
+        model = Model(input=input, output=[
+            output_1, output_2, output_3, output_4, output_5])
+        return model
+    """
     def build_network(self, depth=4, mkenerls=[64, 64, 64, 32], conv_conf=[2, 1], pooling_conf=["max", 2, 2], bn=False, dropout=True, rate=0.8, activation="relu", conf=[5, 5, 14], output_dim=5):
         mchannel, mheight, mwidth = conf
         input = Input(shape=(mchannel, mheight, mwidth))
@@ -171,6 +193,7 @@ class strategyCNN(object):
         model = Model(input=input, output=[
             output_1, output_2, output_3, output_4, output_5])
         return model
+    """
 
     def train(self):
         if self.config.INIT_DATA:
@@ -201,7 +224,11 @@ class strategyCNN(object):
         else:
             self.init_data()
         print("finish init_data")
-        self.network = self.build_network()
+        self.X_train = self.X_train.reshape(
+            1, self.X_train.shape[0]*self.X_train.shape[1]*self.X_train.shape[2]).astype("float32")[0]
+        self.X_test = self.X_test.reshape(
+            1, self.X_test.shape[0]*self.X_test.shape[1]*self.X_test.shape[2]).astype("float32")[0]
+        self.network = self.build_network_dense()
         self.network.summary()
         opt = Adam(lr=self.config.LEARNING_RATE)
         self.network.compile(loss={
@@ -234,18 +261,18 @@ class strategyCNN(object):
                 self.Y_test_2, axis=1), np.argmax(self.Y_test_3, axis=1), np.argmax(self.Y_test_4, axis=1), np.argmax(self.Y_test_5, axis=1)
             print(self.Y_test_2)
             print(self.Y_test_1.shape, self.y_pred_1.shape)
-            #print("test", self.Y_test_1[:20])
-            #print("test2", self.Y_test_2[:100])
-            #print("test3", self.Y_test_3[:20])
-            #print("pred", self.y_pred_1[:20])
-            #print("pred2", self.y_pred_2[:20])
-            #print("pred3", self.y_pred_3[:20])
+            # print("test", self.Y_test_1[:20])
+            # print("test2", self.Y_test_2[:100])
+            # print("test3", self.Y_test_3[:20])
+            # print("pred", self.y_pred_1[:20])
+            # print("pred2", self.y_pred_2[:20])
+            # print("pred3", self.y_pred_3[:20])
             evaluate(self.Y_test_1, self.y_pred_1, "test.png")
-            #print(confusion_matrix(self.Y_test_1, self.y_pred_1))
-            #print(confusion_matrix(self.Y_test_2, self.y_pred_2))
-            #print(confusion_matrix(self.Y_test_3, self.y_pred_3))
-            #print(confusion_matrix(self.Y_test_4, self.y_pred_4))
-            #print(confusion_matrix(self.Y_test_5, self.y_pred_5))
+            # print(confusion_matrix(self.Y_test_1, self.y_pred_1))
+            # print(confusion_matrix(self.Y_test_2, self.y_pred_2))
+            # print(confusion_matrix(self.Y_test_3, self.y_pred_3))
+            # print(confusion_matrix(self.Y_test_4, self.y_pred_4))
+            # print(confusion_matrix(self.Y_test_5, self.y_pred_5))
             exit()
         print("start fit")
         print(np.array(self.X_train).shape)
@@ -265,7 +292,7 @@ class strategyCNN(object):
         self.Y_test_3 = np.array(self.Y_test_3)
         self.Y_test_4 = np.array(self.Y_test_4)
         self.Y_test_5 = np.array(self.Y_test_5)
-        #print("output: ",self.network.predict(self.X_train[:2],batch_size=2))
+        # print("output: ",self.network.predict(self.X_train[:2],batch_size=2))
         history = self.network.fit(
             self.X_train,
             {
@@ -286,7 +313,7 @@ class strategyCNN(object):
         # compare_TV(history)
         # pickle.dump(history,open("history.pkl","rb"))
         self.network.save_weights(self.config.OUTPUT_PATH + "/param.h5")
-        #self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = self.network.predict_classes(self.X_test)
+        # self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = self.network.predict_classes(self.X_test)
         self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = self.network.predict(
             self.X_test, batch_size=len(self.X_test))
         # print(self.y_pred_1[:4])
@@ -307,9 +334,10 @@ class strategyCNN(object):
         evaluate(self.Y_test_3, self.y_pred_3, "test3.png")
         evaluate(self.Y_test_4, self.y_pred_4, "test4.png")
         evaluate(self.Y_test_5, self.y_pred_5, "test5.png")
-        #with open("history.pkl","wb") as f:
+        # with open("history.pkl","wb") as f:
         #    pickle.dump(history, f)
-        pickle.dump(history, open(self.config.OUTPUT_PATH +"/data/history.pkl", mode="wb"))
+        pickle.dump(history, open(self.config.OUTPUT_PATH +
+                                  "/data/history.pkl", mode="wb"))
         print(confusion_matrix(self.Y_test_1, self.y_pred_1))
         print(confusion_matrix(self.Y_test_2, self.y_pred_2))
         print(confusion_matrix(self.Y_test_3, self.y_pred_3))
