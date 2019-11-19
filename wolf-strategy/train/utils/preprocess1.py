@@ -1,18 +1,6 @@
 import os
 import numpy as np
 from . import splitText
-"""
-estimate:0
-co:1
-vote:2
-divined:3
-identified:4
-agree:5
-disagree:6
-request:7
-inquire:8
-because:9
-"""
 
 
 class preprocess1(object):
@@ -23,12 +11,11 @@ class preprocess1(object):
         }
         self.f_map = np.zeros(
             (self.agentNum, self.agentNum, len(self.content_map.keys())))
-        self.y_map = np.zeros((5, 5))
+        self.y_map = np.zeros(25)
         self.is_divine = False
         self.is_finish = False
 
     def update_result(self):
-        self.y_map = np.array(self.y_map).flatten()
         self.y_map1 = self.y_map[:5]
         self.y_map2 = self.y_map[5:10]
         self.y_map3 = self.y_map[10:15]
@@ -39,23 +26,23 @@ class preprocess1(object):
     def update_status(self, contents):
         if "Sample" in contents[5]:
             agent = int(contents[2]) - 1
-            self.y_map[agent][0] = 1
+            self.y_map[agent*5+0] = 1
 
         elif "CALM" in contents[5]:
             agent = int(contents[2]) - 1
-            self.y_map[agent][1] = 1
+            self.y_map[agent*5+1] = 1
 
         elif "Liar" in contents[5]:
             agent = int(contents[2]) - 1
-            self.y_map[agent][2] = 1
+            self.y_map[agent*5+2] = 1
 
         elif "REPEL" in contents[5]:
             agent = int(contents[2]) - 1
-            self.y_map[agent][3] = 1
+            self.y_map[agent*5+3] = 1
 
         elif "Follow" in contents[5]:
             agent = int(contents[2]) - 1
-            self.y_map[agent][4] = 1
+            self.y_map[agent*5+4] = 1
 
     def update_divine(self, content):
         agent = int(content[2]) - 1
