@@ -1,6 +1,6 @@
 class Config(object):
     def __init__(self):
-        self.EPOCH = 10
+        self.EPOCH = 30
         self.LOG_PATH = "../AIWolf-ver0.5.6/log/*/*"
         self.OUTPUT_PATH = "result"
         self.BATCH_SIZE = 128
