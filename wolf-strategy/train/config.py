@@ -7,8 +7,11 @@ class Config(object):
         self.TRAIN_PAR_TEST = 0.9
         self.LEARNING_RATE = 0.0008
         self.DATA_PATH = "result/data"
-        self.INIT_DATA = True
+        self.INIT_DATA = False
         self.IS_FINISH_TRAIN = False
+        self.TRAIN_FILE = "LSTM"
+        self.NETWORK = "GCNN"
+
     def output_config(self):
         text = "EPOCH: " + str(self.EPOCH) + "\n"
         text += "OUTPUT_PATH: " + self.OUTPUT_PATH + "\n"

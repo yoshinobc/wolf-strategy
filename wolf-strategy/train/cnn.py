@@ -23,12 +23,10 @@ from tqdm import tqdm
 import pickle
 from keras.utils import plot_model
 from utils import preprocess1
-# import matplotlib.pyplot as plt
-# import pandas as pd
-# import seaborn as sns
+import matplotlib.pyplot as plt
 import random
 
-"""
+
 def evaluate(y_true, y_pred, name):
     labels = sorted(list(set(y_true)))
     cmx_data = confusion_matrix(y_true, y_pred, labels=labels)
@@ -39,36 +37,6 @@ def evaluate(y_true, y_pred, name):
     sns.heatmap(df_cmx, annot=True)
     plt.savefig(name)
     plt.show()
-"""
-
-"""
-def compare_TV(history):
-    import matplotlib.pyplot as plt
-
-    # Setting Parameters
-    acc = history.history['acc']
-    val_acc = history.history['val_acc']
-    loss = history.history['loss']
-    val_loss = history.history['val_loss']
-
-    epochs = range(len(acc))
-
-    # 1) Accracy Plt
-    plt.plot(epochs, acc, 'bo', label='training acc')
-    plt.plot(epochs, val_acc, 'b', label='validation acc')
-    plt.title('Training and Validation acc')
-    plt.legend()
-    plt.savefig("valid_acc.png")
-    plt.figure()
-
-    # 2) Loss Plt
-    plt.plot(epochs, loss, 'bo', label='training loss')
-    plt.plot(epochs, val_loss, 'b', label='validation loss')
-    plt.title('Training and Validation loss')
-    plt.legend()
-
-    plt.savefig("valid_loss.png")
-"""
 
 
 class strategyCNN(object):
@@ -107,6 +75,20 @@ class strategyCNN(object):
             Y_train_4)*self.config.TRAIN_PAR_TEST)], Y_train_4[int(len(Y_train_4)*self.config.TRAIN_PAR_TEST) + 1:]
         self.Y_train_5, self.Y_test_5 = Y_train_5[:int(len(
             Y_train_5)*self.config.TRAIN_PAR_TEST)], Y_train_5[int(len(Y_train_5)*self.config.TRAIN_PAR_TEST) + 1:]
+
+        self.X_train = np.array(self.X_train)
+        self.X_test = np.array(self.X_test)
+        self.Y_train_1 = np.array(self.Y_train_1)
+        self.Y_train_2 = np.array(self.Y_train_2)
+        self.Y_train_3 = np.array(self.Y_train_3)
+        self.Y_train_4 = np.array(self.Y_train_4)
+        self.Y_train_5 = np.array(self.Y_train_5)
+        self.Y_test_1 = np.array(self.Y_test_1)
+        self.Y_test_2 = np.array(self.Y_test_2)
+        self.Y_test_3 = np.array(self.Y_test_3)
+        self.Y_test_4 = np.array(self.Y_test_4)
+        self.Y_test_5 = np.array(self.Y_test_5)
+
         os.makedirs(self.config.OUTPUT_PATH+"/data", exist_ok=True)
         pickle.dump(self.X_train, open(self.config.OUTPUT_PATH +
                                        "/data/X_train.pkl", mode="wb"))
@@ -259,24 +241,38 @@ class strategyCNN(object):
             self.init_data()
         print("finish init_data")
         self.X_train = np.array(self.X_train)
-        """
-        self.X_test = np.array(self.X_test)
-        self.X_train_ = []
-        for self.X_t in self.X_train:
-            X_tra = self.X_t.reshape(
-                1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
-            self.X_train_.append(X_tra)
-        self.X_train_ = np.array(self.X_train_)
-        self.X_test_ = []
-        for self.X_t in self.X_test:
-            X_tra = self.X_t.reshape(
-                1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
-            self.X_test_.append(X_tra)
-        self.X_test_ = np.array(self.X_test_)
-        """
-        # self.network = self.build_network_dense()
-        # self.network = self.build_network()
-        self.network = self.build_network_cnn()
+        if self.config.NETWORK == "CNN":
+            self.X_test = np.array(self.X_test)
+            self.X_train_ = []
+            for self.X_t in self.X_train:
+                X_tra = self.X_t.reshape(
+                    1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
+                self.X_train_.append(X_tra)
+            self.X_train_ = np.array(self.X_train_)
+            self.X_test_ = []
+            for self.X_t in self.X_test:
+                X_tra = self.X_t.reshape(
+                    1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
+                self.X_test_.append(X_tra)
+            self.X_test_ = np.array(self.X_test_)
+            self.network = self.build_network_cnn()
+        elif self.config.NETWORK == "GCNN":
+            self.X_test = np.array(self.X_test)
+            self.X_train_ = []
+            for self.X_t in self.X_train:
+                X_tra = self.X_t.reshape(
+                    1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
+                self.X_train_.append(X_tra)
+            self.X_train_ = np.array(self.X_train_)
+            self.X_test_ = []
+            for self.X_t in self.X_test:
+                X_tra = self.X_t.reshape(
+                    1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
+                self.X_test_.append(X_tra)
+            self.X_test_ = np.array(self.X_test_)
+            self.network = self.build_network()
+        else:
+            self.network = self.build_network_dense()
         self.network.summary()
         opt = Adam(lr=self.config.LEARNING_RATE)
         self.network.compile(loss={
@@ -287,8 +283,6 @@ class strategyCNN(object):
             "output_5": "categorical_crossentropy"
         },
             optimizer=opt,
-            # metrics=["accuracy", "accuracy",
-            #         "accuracy", "accuracy", "accuracy"]
             metrics=["accuracy"]
         )
         self.train_iterations()
@@ -296,102 +290,53 @@ class strategyCNN(object):
     def train_iterations(self):
         if self.config.IS_FINISH_TRAIN:
             print("start test")
-            self.X_test = np.array(self.X_test)
-            self.Y_test_1 = np.array(self.Y_test_1)
-            self.Y_test_2 = np.array(self.Y_test_2)
-            self.Y_test_3 = np.array(self.Y_test_3)
-            self.Y_test_4 = np.array(self.Y_test_4)
-            self.Y_test_5 = np.array(self.Y_test_5)
             self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = self.network.predict(
                 self.X_test, batch_size=len(self.X_test))
 
             self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = np.argmax(self.y_pred_1, axis=1), np.argmax(
                 self.y_pred_1, axis=1), np.argmax(self.y_pred_3, axis=1), np.argmax(self.y_pred_4, axis=1), np.argmax(self.y_pred_5, axis=1)
-            print(self.Y_test_2)
+
             self.Y_test_1, self.Y_test_2, self.Y_test_3, self.Y_test_4, self.Y_test_5 = np.argmax(self.Y_test_1, axis=1), np.argmax(
                 self.Y_test_2, axis=1), np.argmax(self.Y_test_3, axis=1), np.argmax(self.Y_test_4, axis=1), np.argmax(self.Y_test_5, axis=1)
-            print(self.Y_test_2)
-            print(self.Y_test_1.shape, self.y_pred_1.shape)
-            # print("test", self.Y_test_1[:20])
-            # print("test2", self.Y_test_2[:100])
-            # print("test3", self.Y_test_3[:20])
-            # print("pred", self.y_pred_1[:20])
-            # print("pred2", self.y_pred_2[:20])
-            # print("pred3", self.y_pred_3[:20])
-            # evaluate(self.Y_test_1, self.y_pred_1, "test.png")
-            # print(confusion_matrix(self.Y_test_1, self.y_pred_1))
-            # print(confusion_matrix(self.Y_test_2, self.y_pred_2))
-            # print(confusion_matrix(self.Y_test_3, self.y_pred_3))
-            # print(confusion_matrix(self.Y_test_4, self.y_pred_4))
-            # print(confusion_matrix(self.Y_test_5, self.y_pred_5))
-            exit()
-        print("start fit")
-        print(np.array(self.X_train).shape)
-        print(np.array(self.Y_train_1).shape)
-        # print(np.array(self.Y_train_1).shape)
-        print(np.array(self.X_train[:2]).shape)
-        print(np.array(self.X_train[0]).shape)
-        self.X_train = np.array(self.X_train)
-        self.X_test = np.array(self.X_test)
-        self.Y_train_1 = np.array(self.Y_train_1)
-        self.Y_train_2 = np.array(self.Y_train_2)
-        self.Y_train_3 = np.array(self.Y_train_3)
-        self.Y_train_4 = np.array(self.Y_train_4)
-        self.Y_train_5 = np.array(self.Y_train_5)
-        self.Y_test_1 = np.array(self.Y_test_1)
-        self.Y_test_2 = np.array(self.Y_test_2)
-        self.Y_test_3 = np.array(self.Y_test_3)
-        self.Y_test_4 = np.array(self.Y_test_4)
-        self.Y_test_5 = np.array(self.Y_test_5)
-        # print("output: ",self.network.predict(self.X_train[:2],batch_size=2))
-        history = self.network.fit(
-            self.X_train,
-            {
-                "output_1": self.Y_train_1,
-                "output_2": self.Y_train_2,
-                "output_3": self.Y_train_3,
-                "output_4": self.Y_train_4,
-                "output_5": self.Y_train_5
-            },
-            batch_size=self.config.BATCH_SIZE,
-            epochs=self.config.EPOCH,
-            validation_data=(
-                self.X_test, [self.Y_test_1, self.Y_test_2,
-                              self.Y_test_3, self.Y_test_4, self.Y_test_5]
-            ))
-        # with open(self.config.OUTPUT_PATH + "/History.txt", "w") as f:
-        #    f.write(history)
-        # compare_TV(history)
-        # pickle.dump(history,open("history.pkl","rb"))
-        self.network.save_weights(self.config.OUTPUT_PATH + "/param.h5")
 
-        self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = self.network.predict(
-            self.X_test_, batch_size=len(self.X_test_))
-        # print(self.y_pred_1[:4])
-        # print("1",self.y_pred_1)
-        # print("2",self.y_pred_2)
-        # print("3",self.y_pred_3)
-        self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = np.argmax(self.y_pred_1, axis=1), np.argmax(
-            self.y_pred_1, axis=1), np.argmax(self.y_pred_3, axis=1), np.argmax(self.y_pred_4, axis=1), np.argmax(self.y_pred_5, axis=1)
-        self.Y_test_1, self.Y_test_2, self.Y_test_3, self.Y_test_4, self.Y_test_5 = np.argmax(self.Y_test_1, axis=1), np.argmax(
-            self.Y_test_2, axis=1), np.argmax(self.Y_test_3, axis=1), np.argmax(self.Y_test_4, axis=1), np.argmax(self.Y_test_5, axis=1)
-        print(self.Y_test_1.shape, self.y_pred_1.shape)
-        print("test", self.Y_test_1[:20])
-        print("pred", self.y_pred_1[:20])
-        print("pred2", self.y_pred_2[:20])
-        print("pred3", self.y_pred_3[:20])
+            evaluate(self.Y_test_1, self.y_pred_1, "test1.png")
+            evaluate(self.Y_test_2, self.y_pred_2, "test2.png")
+            evaluate(self.Y_test_3, self.y_pred_3, "test3.png")
+            evaluate(self.Y_test_4, self.y_pred_4, "test4.png")
+            evaluate(self.Y_test_5, self.y_pred_5, "test5.png")
 
-        # evaluate(self.Y_test_1, self.y_pred_1, "test1.png")
-        # evaluate(self.Y_test_2, self.y_pred_2, "test2.png")
-        # evaluate(self.Y_test_3, self.y_pred_3, "test3.png")
-        # evaluate(self.Y_test_4, self.y_pred_4, "test4.png")
-        # evaluate(self.Y_test_5, self.y_pred_5, "test5.png")
-        # with open("history.pkl","wb") as f:
-        #    pickle.dump(history, f)
-        pickle.dump(history, open(self.config.OUTPUT_PATH +
-                                  "/data/history_dense.pkl", mode="wb"))
-        # print(confusion_matrix(self.Y_test_1, self.y_pred_1))
-        # print(confusion_matrix(self.Y_test_2, self.y_pred_2))
-        # print(confusion_matrix(self.Y_test_3, self.y_pred_3))
-        # print(confusion_matrix(self.Y_test_4, self.y_pred_4))
-        # print(confusion_matrix(self.Y_test_5, self.y_pred_5))
+        else:
+            print("start fit")
+            history = self.network.fit(
+                self.X_train,
+                {
+                    "output_1": self.Y_train_1,
+                    "output_2": self.Y_train_2,
+                    "output_3": self.Y_train_3,
+                    "output_4": self.Y_train_4,
+                    "output_5": self.Y_train_5
+                },
+                batch_size=self.config.BATCH_SIZE,
+                epochs=self.config.EPOCH,
+                validation_data=(
+                    self.X_test, [self.Y_test_1, self.Y_test_2,
+                                  self.Y_test_3, self.Y_test_4, self.Y_test_5]
+                ))
+
+            self.network.save_weights(self.config.OUTPUT_PATH + "/param.h5")
+
+            self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = self.network.predict(
+                self.X_test_, batch_size=len(self.X_test_))
+
+            self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = np.argmax(self.y_pred_1, axis=1), np.argmax(
+                self.y_pred_1, axis=1), np.argmax(self.y_pred_3, axis=1), np.argmax(self.y_pred_4, axis=1), np.argmax(self.y_pred_5, axis=1)
+            self.Y_test_1, self.Y_test_2, self.Y_test_3, self.Y_test_4, self.Y_test_5 = np.argmax(
+                self.Y_test_1, axis=1), np.argmax(self.Y_test_2, axis=1), np.argmax(self.Y_test_3, axis=1), np.argmax(self.Y_test_4, axis=1), np.argmax(self.Y_test_5, axis=1)
+
+            evaluate(self.Y_test_1, self.y_pred_1, "test1.png")
+            evaluate(self.Y_test_2, self.y_pred_2, "test2.png")
+            evaluate(self.Y_test_3, self.y_pred_3, "test3.png")
+            evaluate(self.Y_test_4, self.y_pred_4, "test4.png")
+            evaluate(self.Y_test_5, self.y_pred_5, "test5.png")
+            pickle.dump(history, open(self.config.OUTPUT_PATH +
+                                      "/data/history_dense.pkl", mode="wb"))

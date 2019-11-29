@@ -15,117 +15,82 @@ import os
 from tqdm import tqdm
 import pickle
 from keras.utils import plot_model
-from utils import pre1
-from utils import pre2
+from utils import preprocess2
 
 
 class strategyLSTM(object):
     def __init__(self, config):
         self.config = config
 
+    def myembedding(self, X_train):
+        index = 0
+        self.word2vector = {}
+        self.vector2word = {}
+        for X in X_train:
+            if X not in self.word2vector:
+                self.word2vector[X] = index
+                self.vector2word[index] = X
+                index += 1
+        print(self.word2vector)
+
     def init_data(self):
         file_names = glob(self.config.LOG_PATH)
-        texts = []
-        texts_y = []
+        X_train = []
+        Y_train_1 = []
+        Y_train_2 = []
+        Y_train_3 = []
+        Y_train_4 = []
+        Y_train_5 = []
+        random.seed(0)
+        random.shuffle(file_names)
         for name in tqdm(file_names):
-            f = open(name, mode="r")
-            c = f.readline()
-            contents_y = np.zeros((5, 5))
-            text = []
-            text_ = []
-            while c:
-                c = f.readline().rstrip(os.linesep)
-                contents = c.split(",")
-                contents_tmp = []
-                if len(contents) <= 1:
-                    continue
-                if contents[1] == "status":
-                    if "Sample" in contents[5]:
-                        agent = int(contents[2]) - 1
-                        contents_y[agent][0] = 1
-
-                    elif "CALM" in contents[5]:
-                        agent = int(contents[2]) - 1
-                        contents_y[agent][1] = 1
-
-                    elif "Liar" in contents[5]:
-                        agent = int(contents[2]) - 1
-                        contents_y[agent][2] = 1
-
-                    elif "REPEL" in contents[5]:
-                        agent = int(contents[2]) - 1
-                        contents_y[agent][3] = 1
-
-                    elif "Follow" in contents[5]:
-                        agent = int(contents[2]) - 1
-                        contents_y[agent][4] = 1
-                    continue
-                elif contents[1] == "talk":
-                    day = contents[0]
-                    tp = contents[1]
-                    id_ = contents[2]
-                    agent = contents[4]
-                    sentence = contents[5].split(" ")
-                    contents_tmp = [day, tp, id_, agent]
-                    # print(sentence)
-                    if sentence[0] == "AGREE" or sentence[0] == "DISAGREE":
-                        d = int(sentence[2][3:])
-                        i = int(sentence[3][3:6])
-                        for te in text:
-                            if int(te[0]) == d and int(te[2]) == i and te[1] == "talk":
-                                # print(contents[5])
-                                contents_tmp.extend([sentence[0]])
-                                contents_tmp.extend(te[4:])
-                    else:
-                        contents_tmp.extend(sentence)
-                    # .extend(sentence)
-                elif contents[1] == "divine" and contents[2] == "1":
-                    day = contents[0]
-                    tp = contents[1]
-                    agent = contents[3]
-                    sentence = contents[4]
-                    contents_tmp = [day, tp, agent, sentence]
-                elif contents[1] == "vote" or contents[1] == "execute" or contents[1] == "attack":
-                    day = contents[0]
-                    tp = contents[1]
-                    agent = contents[2]
-                    sentence = contents[3]
-                    contents_tmp = [day, tp, agent, sentence]
-                else:
-                    continue
-                text.append(contents_tmp)
-                contents_tmp = " ".join(contents_tmp)
-                text_.append(contents_tmp)
-                # text_ += contents_tmp + "\n"
-            texts.append(text_)
-            flaten_contents_y = np.array(contents_y).flatten()
-            texts_y.append(flaten_contents_y)
-            f.close()
-        X_train, X_test = texts[:int(len(
-            texts)*self.config.TRAIN_PAR_TEST)], texts[int(len(texts)*self.config.TRAIN_PAR_TEST) + 1:]
-        self.Y_train, self.Y_test = texts_y[:int(len(
-            texts)*self.config.TRAIN_PAR_TEST)], texts_y[int(len(texts)*self.config.TRAIN_PAR_TEST) + 1:]
-        print("init tokenizer")
-
-        self.tokenizer = Tokenizer()
-        self.tokenizer.fit_on_texts(X_train)
-        print(self.tokenizer.word_counts)
-        print("fit tokenizer")
-        X_train = self.toåkenizer.texts_to_sequences(X_train)
-        X_test = self.tokenizer.texts_to_sequences(X_test)
-        self.X_train = pad_sequences(X_train, maxlen=self.config.MAX_LEN)
-        self.X_test = pad_sequences(X_test, maxlen=self.config.MAX_LEN)
+            pre1 = preprocess2.preprocess2()
+            pre1.update(name)
+            if pre1.is_finish:
+                X_train.append(pre1.f_maps)
+                Y_train_1.append(pre1.y_map1)
+                Y_train_2.append(pre1.y_map2)
+                Y_train_3.append(pre1.y_map3)
+                Y_train_4.append(pre1.y_map4)
+                Y_train_5.append(pre1.y_map5)
+        X_train = self.myembedding(X_train)
+        self.X_train, self.X_test = X_train[:int(len(
+            X_train)*self.config.TRAIN_PAR_TEST)], X_train[int(len(X_train)*self.config.TRAIN_PAR_TEST) + 1:]
+        self.Y_train_1, self.Y_test_1 = Y_train_1[:int(len(
+            Y_train_1)*self.config.TRAIN_PAR_TEST)], Y_train_1[int(len(Y_train_1)*self.config.TRAIN_PAR_TEST) + 1:]
+        self.Y_train_2, self.Y_test_2 = Y_train_2[:int(len(
+            Y_train_2)*self.config.TRAIN_PAR_TEST)], Y_train_2[int(len(Y_train_2)*self.config.TRAIN_PAR_TEST) + 1:]
+        self.Y_train_3, self.Y_test_3 = Y_train_3[:int(len(
+            Y_train_3)*self.config.TRAIN_PAR_TEST)], Y_train_3[int(len(Y_train_3)*self.config.TRAIN_PAR_TEST) + 1:]
+        self.Y_train_4, self.Y_test_4 = Y_train_4[:int(len(
+            Y_train_4)*self.config.TRAIN_PAR_TEST)], Y_train_4[int(len(Y_train_4)*self.config.TRAIN_PAR_TEST) + 1:]
+        self.Y_train_5, self.Y_test_5 = Y_train_5[:int(len(
+            Y_train_5)*self.config.TRAIN_PAR_TEST)], Y_train_5[int(len(Y_train_5)*self.config.TRAIN_PAR_TEST) + 1:]
         os.makedirs(self.config.OUTPUT_PATH+"/data", exist_ok=True)
         pickle.dump(self.X_train, open(self.config.OUTPUT_PATH +
                                        "/data/X_train.pkl", mode="wb"))
         pickle.dump(self.X_test, open(self.config.OUTPUT_PATH +
                                       "/data/X_test.pkl", mode="wb"))
-        pickle.dump(self.Y_train, open(self.config.OUTPUT_PATH +
-                                       "/data/y_train.pkl", mode="wb"))
-        pickle.dump(self.Y_test, open(self.config.OUTPUT_PATH +
-                                      "/data/y_test.pkl", mode="wb"))
-        pickle.dump(self.tokenizer, open(
-            self.config.OUTPUT_PATH + "/data/tokenizer.pkl", mode="wb"))
+        pickle.dump(self.Y_train_1, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_train_1.pkl", mode="wb"))
+        pickle.dump(self.Y_test_1, open(self.config.OUTPUT_PATH +
+                                        "/data/Y_test_1.pkl", mode="wb"))
+        pickle.dump(self.Y_train_2, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_train_2.pkl", mode="wb"))
+        pickle.dump(self.Y_test_2, open(self.config.OUTPUT_PATH +
+                                        "/data/Y_test_2.pkl", mode="wb"))
+        pickle.dump(self.Y_train_3, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_train_3.pkl", mode="wb"))
+        pickle.dump(self.Y_test_3, open(self.config.OUTPUT_PATH +
+                                        "/data/Y_test_3.pkl", mode="wb"))
+        pickle.dump(self.Y_train_4, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_train_4.pkl", mode="wb"))
+        pickle.dump(self.Y_test_4, open(self.config.OUTPUT_PATH +
+                                        "/data/Y_test_4.pkl", mode="wb"))
+        pickle.dump(self.Y_train_5, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_train_5.pkl", mode="wb"))
+        pickle.dump(self.Y_test_5, open(self.config.OUTPUT_PATH +
+                                        "/data/Y_test_5.pkl", mode="wb"))
 
     def build_network(self):
 
@@ -162,13 +127,10 @@ class strategyLSTM(object):
     def train_iterations(self):
         print("start fit")
         print(np.array(self.X_train).shape)
-        # print(self.X_train[0])
-        # print(self.Y_train[0])
         print(np.array(self.Y_train).shape)
         print(len(self.X_train[0]), self.X_train[0])
         print(self.network.predict(self.X_train))
-        # 出力の形式があってない？
-        # print(self.X_train[0])
+
         history = self.network.fit(self.X_train, self.Y_train, batch_size=self.config.BATCH_SIZE,
                                    epochs=self.config.EPOCH, validation_data=(
                                        self.X_test, self.Y_test),
