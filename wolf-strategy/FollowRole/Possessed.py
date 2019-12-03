@@ -42,6 +42,7 @@ class Possessed(Villager.Villager):
         self.divineop = None
         self.divineans = None
         self.isdivine = True
+        self.istalk_vote = [False for _ in range(self.playerNum)]
 
     def finish(self):
         return None
@@ -66,6 +67,17 @@ class Possessed(Villager.Villager):
             self.isdivine = True
             for d in self.base_info["statusMap"].items():
                 if d[1] == "ALIVE":
-                    return cb.DIVINE(int(d[0])-1, "WEREWOLF")
+                    return cb.DIVINE(int(d[0]) - 1, "WEREWOLF")
+        index = 0
+        while True:
+            if self.talk_turn <= 3:
+                return cb.skip()
+            if index == self.playerNum:
+                return cb.skip()
+            if not self.istalk_vote[index]:
+                self.istalk_vote[index] = True
+                return cb.INQUIRE(index, cb.VOTE("ANY"))
+            else:
+                index += 1
         else:
             return cb.skip()

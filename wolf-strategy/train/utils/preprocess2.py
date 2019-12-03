@@ -120,10 +120,10 @@ class preprocess2(object):
         if line[3] == "SEER":
             self.is_divine = True
         while line:
-            self.f_map = np.zeros(len(self.content_map))
+            self.f_map = [0] * len(self.content_map)
+            # np.zeros(len(self.content_map))
             line = f.readline().rstrip(os.linesep)
             contents = line.split(",")
-            print(contents)
             if len(contents) == 1:
                 continue
             elif contents[1] == "talk":
@@ -138,5 +138,5 @@ class preprocess2(object):
                 self.update_status(contents)
             elif contents[1] == "result":
                 self.update_result()
-            if self.f_map.any():
+            if any(self.f_map):
                 self.f_maps.append(self.f_map)

@@ -17,23 +17,56 @@ import pickle
 from keras.utils import plot_model
 from utils import preprocess2
 
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+
+def evaluate(y_true, y_pred, name):
+    labels = sorted(list(set(y_true)))
+    cmx_data = confusion_matrix(y_true, y_pred, labels=labels)
+
+    df_cmx = pd.DataFrame(cmx_data, index=labels, columns=labels)
+
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(df_cmx, annot=True)
+    plt.savefig(name)
+    plt.show()
+
 
 class strategyLSTM(object):
     def __init__(self, config):
         self.config = config
 
-    def myembedding(self, X_train):
-        index = 0
+    def myembedding(self, X_train, max_len=90):
+        self.max_len = max_len
+        self.pre_X_train = []
+        self.index = 1
         self.word2vector = {}
         self.vector2word = {}
-        for X in X_train:
-            if X not in self.word2vector:
-                self.word2vector[X] = index
-                self.vector2word[index] = X
-                index += 1
-        print(self.word2vector)
+        print("make word2vec")
+        for X in tqdm(X_train):
+            for X_ in X:
+                X_ = "".join(str(X_))
+                if X_ not in self.word2vector:
+                    self.word2vector[X_] = self.index
+                    self.vector2word[self.index] = X_
+                    self.index += 1
+        pickle.dump(self.word2vector, open(self.config.OUTPUT_PATH +
+                                           "/data/word2vector.pkl", mode="wb"))
+        print("conv word")
+        for X in tqdm(X_train):
+            self.pre_tmp = []
+            for X_ in X:
+                X_ = "".join(str(X_))
+                self.pre_tmp.append(self.word2vector[X_])
+            while len(self.pre_tmp) != max_len:
+                self.pre_tmp.append(0)
+            self.pre_X_train.append(self.pre_tmp)
+        return self.pre_X_train
 
     def init_data(self):
+        print("load_file")
         file_names = glob(self.config.LOG_PATH)
         X_train = []
         Y_train_1 = []
@@ -53,6 +86,9 @@ class strategyLSTM(object):
                 Y_train_3.append(pre1.y_map3)
                 Y_train_4.append(pre1.y_map4)
                 Y_train_5.append(pre1.y_map5)
+            else:
+                print(name)
+        print("start embedding")
         X_train = self.myembedding(X_train)
         self.X_train, self.X_test = X_train[:int(len(
             X_train)*self.config.TRAIN_PAR_TEST)], X_train[int(len(X_train)*self.config.TRAIN_PAR_TEST) + 1:]
@@ -94,15 +130,34 @@ class strategyLSTM(object):
 
     def build_network(self):
 
-        model = Sequential()
-        vocabulary_size = len(self.tokenizer.word_index) + 1  # 学習データの語彙数+1z
-        model.add(Embedding(input_dim=vocabulary_size,
-                            output_dim=self.config.OUTPUT_DIM, mask_zero=True))
-        model.add(LSTM(self.config.HIDDEN_UNITS,
-                       return_sequences=False))
-        model.add(Dense(25, activation="sigmoid"))
-        model.compile(loss="binary_crossentropy",
-                      optimizer="adam", metrics=["accuracy"])
+        main_input = Input(shape=(1, self.max_len,))
+        lstm = LSTM(self.config.HIDDEN_UNITS,
+                    return_sequences=False)(main_input)
+        x = Dense(50, activation="relu")(lstm)
+        output_1 = Dense(5, activation="softmax",
+                         input_dim=50, name="output_1")(x)
+        output_2 = Dense(5, activation="softmax",
+                         input_dim=50, name="output_2")(x)
+        output_3 = Dense(5, activation="softmax",
+                         input_dim=50, name="output_3")(x)
+        output_4 = Dense(5, activation="softmax",
+                         input_dim=50, name="output_4")(x)
+        output_5 = Dense(5, activation="softmax",
+                         input_dim=50, name="output_5")(x)
+        model = Model(input=main_input, output=[
+            output_1, output_2, output_3, output_4, output_5])
+
+        opt = Adam(lr=self.config.LEARNING_RATE)
+        model.compile(loss={
+            "output_1": "categorical_crossentropy",
+            "output_2": "categorical_crossentropy",
+            "output_3": "categorical_crossentropy",
+            "output_4": "categorical_crossentropy",
+            "output_5": "categorical_crossentropy"
+        },
+            optimizer=opt,
+            metrics=["accuracy"]
+        )
         return model
 
     def train(self):
@@ -115,8 +170,6 @@ class strategyLSTM(object):
                 open(self.config.DATA_PATH + "/Y_train.pkl", "rb"))
             self.Y_test = pickle.load(
                 open(self.config.DATA_PATH + "/Y_test.pkl", "rb"))
-            self.tokenizer = pickle.load(
-                open(self.config.DATA_PATH + "/tokenizer.pkl", "rb"))
         else:
             self.init_data()
         print("finish init_data")
@@ -127,16 +180,56 @@ class strategyLSTM(object):
     def train_iterations(self):
         print("start fit")
         print(np.array(self.X_train).shape)
-        print(np.array(self.Y_train).shape)
-        print(len(self.X_train[0]), self.X_train[0])
-        print(self.network.predict(self.X_train))
+        self.X_train = np.array(self.X_train)
+        self.X_train = self.X_train.reshape(-1, 1, self.max_len)
+        self.X_test = np.array(self.X_test)
+        self.X_test = self.X_test.reshape(-1, 1, self.max_len)
+        print(np.array(self.X_train).shape)
 
-        history = self.network.fit(self.X_train, self.Y_train, batch_size=self.config.BATCH_SIZE,
-                                   epochs=self.config.EPOCH, validation_data=(
-                                       self.X_test, self.Y_test),
-                                   verbose=2)
-        with open(self.config.OUTPUT_PATH + "/History.txt", "w") as f:
-            f.write(history)
+        self.X_train = np.array(self.X_train)
+        self.Y_train_1 = np.array(self.Y_train_1)
+        self.Y_train_2 = np.array(self.Y_train_2)
+        self.Y_train_3 = np.array(self.Y_train_3)
+        self.Y_train_4 = np.array(self.Y_train_4)
+        self.Y_train_5 = np.array(self.Y_train_5)
+        self.X_test = np.array(self.X_test)
+        self.Y_test_1 = np.array(self.Y_test_1)
+        self.Y_test_2 = np.array(self.Y_test_2)
+        self.Y_test_3 = np.array(self.Y_test_3)
+        self.Y_test_4 = np.array(self.Y_test_4)
+        self.Y_test_5 = np.array(self.Y_test_5)
+        history = self.network.fit(self.X_train,
+                                   {
+                                       "output_1": self.Y_train_1,
+                                       "output_2": self.Y_train_2,
+                                       "output_3": self.Y_train_3,
+                                       "output_4": self.Y_train_4,
+                                       "output_5": self.Y_train_5
+                                   },
+                                   batch_size=self.config.BATCH_SIZE,
+                                   epochs=self.config.EPOCH,
+                                   validation_data=(
+                                       self.X_test, [
+                                           self.Y_test_1, self.Y_test_2, self.Y_test_3, self.Y_test_4, self.Y_test_5]
+                                   ))
         self.network.save_weights(self.config.OUTPUT_PATH + "/param.h5")
-        self.y_pred = self.network.predict_classes(self.X_test)
-        print(confusion_matrix(self.Y_test, self.y_pred))
+        self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = self.network.predict(
+            self.X_test, batch_size=len(self.X_test))
+
+        self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = np.argmax(self.y_pred_1, axis=1), np.argmax(
+            self.y_pred_2, axis=1), np.argmax(self.y_pred_3, axis=1), np.argmax(self.y_pred_4, axis=1), np.argmax(self.y_pred_5, axis=1)
+        self.Y_test_1, self.Y_test_2, self.Y_test_3, self.Y_test_4, self.Y_test_5 = np.argmax(
+            self.Y_test_1, axis=1), np.argmax(self.Y_test_2, axis=1), np.argmax(self.Y_test_3, axis=1), np.argmax(self.Y_test_4, axis=1), np.argmax(self.Y_test_5, axis=1)
+
+        evaluate(self.Y_test_1, self.y_pred_1,
+                 self.config.OUTPUT_PATH + "/test1.png")
+        evaluate(self.Y_test_2, self.y_pred_2,
+                 self.config.OUTPUT_PATH + "/test2.png")
+        evaluate(self.Y_test_3, self.y_pred_3,
+                 self.config.OUTPUT_PATH + "/test3.png")
+        evaluate(self.Y_test_4, self.y_pred_4,
+                 self.config.OUTPUT_PATH + "/test4.png")
+        evaluate(self.Y_test_5, self.y_pred_5,
+                 self.config.OUTPUT_PATH + "/test5.png")
+        pickle.dump(history, open(self.config.OUTPUT_PATH +
+                                  "/history_" + self.config.NETWORK + ".pkl", mode="wb"))

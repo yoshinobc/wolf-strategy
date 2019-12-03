@@ -1,3 +1,32 @@
+"""
+all
+{'BECAUSE': 892618, 'COMINGOUT': 1041994, 'ESTIMATE': 1577232, 'INQUIRE': 80289, 'DIVINED': 441716, 'VOTE': 4431009, 'REQUEST': 3266716, 'DAY': 415393, 'DISAGREE': 915777}
+sample
+{'BECAUSE': 203222, 'COMINGOUT': 150694, 'ESTIMATE': 198440, 'DIVINED': 266788, 'VOTE': 473527, 'REQUEST': 530173, 'DAY': 415393}
+calm
+{'BECAUSE': 280360, 'COMINGOUT': 479548, 'ESTIMATE': 560720, 'DIVINED': 35195, 'VOTE': 1092545, 'REQUEST': 511923, 'DISAGREE': 915777}
+liar
+{'BECAUSE': 205750, 'COMINGOUT': 198725, 'ESTIMATE': 411500, 'DIVINED': 70782, 'VOTE': 773395, 'REQUEST': 155949}
+repel
+{'BECAUSE': 203286, 'COMINGOUT': 197452, 'ESTIMATE': 406572, 'DIVINED': 68951, 'VOTE': 763859, 'REQUEST': 153803}
+follow
+{'COMINGOUT': 15575, 'VOTE': 1327683, 'REQUEST': 1914868, 'INQUIRE': 80289}
+"""
+"""
+import numpy as np
+import matplotlib.pyplot as plt
+def plot(count_dict):
+    key_list = []
+    value_list = []
+    for key, value in dict.items():
+        key_list.append(key)
+        value_list.append(value)
+
+    left = np.array(key_list)
+    height = np.array(value_list)
+    plt.bar(left, height,tick_label=label, align="center")
+    plt.show()
+"""
 from glob import glob
 import random
 
@@ -25,6 +54,8 @@ from keras.utils import plot_model
 from utils import preprocess1
 import matplotlib.pyplot as plt
 import random
+import pandas as pd
+import seaborn as sns
 
 
 def evaluate(y_true, y_pred, name):
@@ -52,17 +83,61 @@ class strategyCNN(object):
         Y_train_4 = []
         Y_train_5 = []
         random.seed(0)
+        self.count_all = {}
+        self.all_sample = {}
+        self.all_calm = {}
+        self.all_liar = {}
+        self.all_repel = {}
+        self.all_follow = {}
         random.shuffle(file_names)
         for name in tqdm(file_names):
             pre1 = preprocess1.preprocess1()
             pre1.update(name)
             if pre1.is_finish:
+                for key, value in pre1.count_content.items():
+                    if key in self.count_all:
+                        self.count_all[key] += value
+                    else:
+                        self.count_all[key] = value
+                for key, value in pre1.count_sample.items():
+                    if key in self.all_sample:
+                        self.all_sample[key] += value
+                    else:
+                        self.all_sample[key] = value
+                for key, value in pre1.count_calm.items():
+                    if key in self.all_calm:
+                        self.all_calm[key] += value
+                    else:
+                        self.all_calm[key] = value
+                for key, value in pre1.count_liar.items():
+                    if key in self.all_liar:
+                        self.all_liar[key] += value
+                    else:
+                        self.all_liar[key] = value
+                for key, value in pre1.count_repel.items():
+                    if key in self.all_repel:
+                        self.all_repel[key] += value
+                    else:
+                        self.all_repel[key] = value
+                for key, value in pre1.count_follow.items():
+                    if key in self.all_follow:
+                        self.all_follow[key] += value
+                    else:
+                        self.all_follow[key] = value
                 X_train.append(pre1.f_map)
                 Y_train_1.append(pre1.y_map1)
                 Y_train_2.append(pre1.y_map2)
                 Y_train_3.append(pre1.y_map3)
                 Y_train_4.append(pre1.y_map4)
                 Y_train_5.append(pre1.y_map5)
+        print(self.count_all)
+        print(self.all_sample)
+        print(self.all_calm)
+        print(self.all_liar)
+        print(self.all_repel)
+        print(self.all_follow)
+
+        exit()
         self.X_train, self.X_test = X_train[:int(len(
             X_train)*self.config.TRAIN_PAR_TEST)], X_train[int(len(X_train)*self.config.TRAIN_PAR_TEST) + 1:]
         self.Y_train_1, self.Y_test_1 = Y_train_1[:int(len(
@@ -242,22 +317,12 @@ class strategyCNN(object):
         print("finish init_data")
         self.X_train = np.array(self.X_train)
         if self.config.NETWORK == "CNN":
-            self.X_test = np.array(self.X_test)
-            self.X_train_ = []
-            for self.X_t in self.X_train:
-                X_tra = self.X_t.reshape(
-                    1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
-                self.X_train_.append(X_tra)
-            self.X_train_ = np.array(self.X_train_)
-            self.X_test_ = []
-            for self.X_t in self.X_test:
-                X_tra = self.X_t.reshape(
-                    1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
-                self.X_test_.append(X_tra)
-            self.X_test_ = np.array(self.X_test_)
             self.network = self.build_network_cnn()
         elif self.config.NETWORK == "GCNN":
             self.X_test = np.array(self.X_test)
+            self.network = self.build_network()
+        else:
+            self.X_test = np.array(self.X_test)
             self.X_train_ = []
             for self.X_t in self.X_train:
                 X_tra = self.X_t.reshape(
@@ -270,8 +335,8 @@ class strategyCNN(object):
                     1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
                 self.X_test_.append(X_tra)
             self.X_test_ = np.array(self.X_test_)
-            self.network = self.build_network()
-        else:
+            self.X_train = self.X_train_
+            self.X_test = self.X_test_
             self.network = self.build_network_dense()
         self.network.summary()
         opt = Adam(lr=self.config.LEARNING_RATE)
@@ -290,12 +355,12 @@ class strategyCNN(object):
     def train_iterations(self):
         if self.config.IS_FINISH_TRAIN:
             print("start test")
+            self.network.load_weights(self.config.OUTPUT_PATH + "/param.h5")
             self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = self.network.predict(
                 self.X_test, batch_size=len(self.X_test))
 
             self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = np.argmax(self.y_pred_1, axis=1), np.argmax(
-                self.y_pred_1, axis=1), np.argmax(self.y_pred_3, axis=1), np.argmax(self.y_pred_4, axis=1), np.argmax(self.y_pred_5, axis=1)
-
+                self.y_pred_2, axis=1), np.argmax(self.y_pred_3, axis=1), np.argmax(self.y_pred_4, axis=1), np.argmax(self.y_pred_5, axis=1)
             self.Y_test_1, self.Y_test_2, self.Y_test_3, self.Y_test_4, self.Y_test_5 = np.argmax(self.Y_test_1, axis=1), np.argmax(
                 self.Y_test_2, axis=1), np.argmax(self.Y_test_3, axis=1), np.argmax(self.Y_test_4, axis=1), np.argmax(self.Y_test_5, axis=1)
 
@@ -326,17 +391,22 @@ class strategyCNN(object):
             self.network.save_weights(self.config.OUTPUT_PATH + "/param.h5")
 
             self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = self.network.predict(
-                self.X_test_, batch_size=len(self.X_test_))
+                self.X_test, batch_size=len(self.X_test))
 
             self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = np.argmax(self.y_pred_1, axis=1), np.argmax(
-                self.y_pred_1, axis=1), np.argmax(self.y_pred_3, axis=1), np.argmax(self.y_pred_4, axis=1), np.argmax(self.y_pred_5, axis=1)
+                self.y_pred_2, axis=1), np.argmax(self.y_pred_3, axis=1), np.argmax(self.y_pred_4, axis=1), np.argmax(self.y_pred_5, axis=1)
             self.Y_test_1, self.Y_test_2, self.Y_test_3, self.Y_test_4, self.Y_test_5 = np.argmax(
                 self.Y_test_1, axis=1), np.argmax(self.Y_test_2, axis=1), np.argmax(self.Y_test_3, axis=1), np.argmax(self.Y_test_4, axis=1), np.argmax(self.Y_test_5, axis=1)
 
-            evaluate(self.Y_test_1, self.y_pred_1, "test1.png")
-            evaluate(self.Y_test_2, self.y_pred_2, "test2.png")
-            evaluate(self.Y_test_3, self.y_pred_3, "test3.png")
-            evaluate(self.Y_test_4, self.y_pred_4, "test4.png")
-            evaluate(self.Y_test_5, self.y_pred_5, "test5.png")
+            evaluate(self.Y_test_1, self.y_pred_1,
+                     self.config.OUTPUT_PATH + "/test1.png")
+            evaluate(self.Y_test_2, self.y_pred_2,
+                     self.config.OUTPUT_PATH + "/test2.png")
+            evaluate(self.Y_test_3, self.y_pred_3,
+                     self.config.OUTPUT_PATH + "/test3.png")
+            evaluate(self.Y_test_4, self.y_pred_4,
+                     self.config.OUTPUT_PATH + "/test4.png")
+            evaluate(self.Y_test_5, self.y_pred_5,
+                     self.config.OUTPUT_PATH + "/test5.png")
             pickle.dump(history, open(self.config.OUTPUT_PATH +
-                                      "/data/history_dense.pkl", mode="wb"))
+                                      "/history_" + self.config.NETWORK + ".pkl", mode="wb"))

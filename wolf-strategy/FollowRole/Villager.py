@@ -45,6 +45,8 @@ class Villager(object):
         texts = splitText.parse_text(text)
         for text in texts:
             content = splitText.splitText(text)
+            if len(content) != 0 and content[0] == "VOTE":
+                self.istalk_vote[agent] = True
             if len(content) != 0 and content[0] == "REQUEST" and (content[1] == "ANY" or content[1] == self.agentIdx):
                 self.update_talk_request(row, content)
 
@@ -71,6 +73,7 @@ class Villager(object):
         self.Agreeque = deque([])
         self.request_vote_agree = None
         self.talk_turn = 0
+        self.istalk_vote = [False for _ in range(self.playerNum)]
 
     def vote(self):
         if self.voteop == None:
@@ -98,6 +101,17 @@ class Villager(object):
         elif not self.request_vote and self.talk_turn >= 3:
             for d in self.base_info["statusMap"].items():
                 if d[1] == "ALIVE":
-                    return cb.REQUEST(int(d[0])-1, cb.REQUEST(self.agentIdx, cb.VOTE("ANY")))
+                    return cb.REQUEST(int(d[0]) - 1, cb.REQUEST(self.agentIdx, cb.VOTE("ANY")))
+        index = 0
+        while True:
+            if self.talk_turn <= 3:
+                return cb.skip()
+            if index == self.playerNum:
+                return cb.skip()
+            if not self.istalk_vote[index]:
+                self.istalk_vote[index] = True
+                return cb.INQUIRE(index, cb.VOTE("ANY"))
+            else:
+                index += 1
         else:
             return cb.skip()

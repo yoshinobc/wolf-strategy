@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 from __future__ import print_function, division
-import RepelRole.Villager
-import RepelRole.Seer
-import RepelRole.Werewolf
-import RepelRole.Possessed
+import LiarRole.Villager
+import LiarRole.Seer
+import LiarRole.Werewolf
+import LiarRole.Possessed
 
 
 # this is main script
@@ -31,13 +31,13 @@ class Liar(object):
         # print(base_info)
         # print(diff_data)
         if self.base_info["myRole"] == "VILLAGER":
-            self.role = RepelRole.Villager.Villager(self.myname)
+            self.role = LiarRole.Villager.Villager(self.myname)
         elif self.base_info["myRole"] == "WEREWOLF":
-            self.role = RepelRole.Werewolf.Werewolf(self.myname)
+            self.role = LiarRole.Werewolf.Werewolf(self.myname)
         elif self.base_info["myRole"] == "SEER":
-            self.role = RepelRole.Seer.Seer(self.myname)
+            self.role = LiarRole.Seer.Seer(self.myname)
         elif self.base_info["myRole"] == "POSSESSED":
-            self.role = RepelRole.Possessed.Possessed(self.myname)
+            self.role = LiarRole.Possessed.Possessed(self.myname)
         self.role.initialize(base_info, diff_data,
                              game_setting, self.base_info["myRole"])
 
@@ -130,7 +130,7 @@ class Liar(object):
 
 
 args = sys.argv
-if len(args) == 7:    
+if len(args) == 7:
     myname = myname+str(args[6])
 
 agent = Liar(myname)

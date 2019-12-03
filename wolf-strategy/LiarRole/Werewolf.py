@@ -12,6 +12,7 @@ class Werewolf(Villager.Villager):
         return int(sorted(self.suspicion.items(), key=lambda x: x[1])[0][0]) + 1
 
     def talk(self):
+        self.talk_step += 1
         if self.co_rate != 2:
             self.co_rate = random.uniform(0, 1)
         if not self.isCo and self.day == 1 and self.co_rate >= 0.5:
@@ -21,15 +22,22 @@ class Werewolf(Villager.Villager):
             else:
                 return cb.COMINGOUT(self.agentIdx, "VILLAGER")
 
-        elif not self.isVote and len(self.vote_list) == self.playerNum - 1:
+        elif not self.isVote and self.talk_step >= 5:
             lists = []
             for i in range(len(self.vote_list)):
-                lists.append(self.vote_list[i][1])
+                if self.vote_list[i] != -1:
+                    lists.append(self.vote_list[i])
             self.isVote = True
-            self.talk_voteop = mode(lists)
+            try:
+                self.talk_voteop = mode(lists)
+            except:
+                for d in self.base_info["statusMap"].items():
+                    if d[1] == "ALIVE":
+                        self.talk_voteop = int(d[0]) - 1
+                        break
             for i in range(len(self.vote_list)):
-                if self.vote_list[i][1] == self.talk_voteop:
-                    self.because_list.append(self.vote_list[i][0])
+                if self.vote_list[i] == self.talk_voteop:
+                    self.because_list.append(i)
             return cb.VOTE(self.talk_voteop)
         elif len(self.because_list) > 0 and self.isVote:
             agent = self.because_list[0]
@@ -38,17 +46,18 @@ class Werewolf(Villager.Villager):
         elif len(self.AGREESentenceQue) >= 1:
             AGREEText = self.AGREESentenceQue.pop()
             return cb.AGREE(AGREEText[0], AGREEText[1], AGREEText[2])
-        elif len(self.DISAGREESentenceQue) >= 2:
+        elif len(self.DISAGREESentenceQue) >= 1:
             DISAGREEText = self.DISAGREESentenceQue.pop()
             return cb.DISAGREE(DISAGREEText[0], DISAGREEText[1], DISAGREEText[2])
         index = 0
-        while True:
-            if index == self.playerNum:
-                return cb.skip()
-            if not self.istalk_vote[index]:
-                self.istalk_vote[index] = True
-                return cb.INQUIRE(index, cb.VOTE("ANY"))
-            else:
-                index += 1
+        if self.talk_step >= 5:
+            while True:
+                if index == self.playerNum:
+                    return cb.skip()
+                if not self.istalk_vote[index] and index != self.agentIdx:
+                    self.istalk_vote[index] = True
+                    return cb.INQUIRE(index, cb.VOTE("ANY"))
+                else:
+                    index += 1
         return cb.skip()
         # INQUIREをつけるか

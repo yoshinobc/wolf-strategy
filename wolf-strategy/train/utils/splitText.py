@@ -3,13 +3,20 @@ import re
 
 def splitText(text):
     temp = text.split()
+    """
+    if len(temp) == 0:
+        return []
+    """
     topic = temp[0]
     if topic == "ESTIMATE":
         target = int(temp[1][6:8]) - 1
         role = temp[2]
         return [topic, target, role]
     elif topic == "COMINGOUT":
-        target = int(temp[1][6:8]) - 1
+        if temp[1][6:8] in "ANY":
+            target = "ANY"
+        else:
+            target = int(temp[1][6:8]) - 1
         role = temp[2]
         return [topic, target, role]
     elif topic == "DIVINATION":
@@ -69,7 +76,7 @@ def splitText(text):
         else:
             target = int(temp[1][6:8]) - 1
         return [topic, target]
-    elif topic == "AGERR":
+    elif topic == "AGREE":
         return [topic]
     elif topic == "DISAGREE":
         return [topic]
@@ -87,9 +94,11 @@ def splitText(text):
                 flag = True
         return [topic, target, sentence]
     elif topic == "INQUIRE":
+        group = re.findall(r'\(.+?\)', text)
         sentence1 = temp[1]
-        sentence2 = temp[2]
+        sentence2 = group[0]
         return [topic, sentence1, sentence2]
+
     elif topic == "BECAUSE":
         group = re.findall(r'\(.+?\)', text)
         sentence1 = group[0]

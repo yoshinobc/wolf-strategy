@@ -34,6 +34,7 @@ class Seer(Villager.Villager):
         self.divineop = None
         self.divineans = None
         self.isdivine = True
+        self.istalk_vote = [False for _ in range(self.playerNum)]
 
     def divine(self):
         if self.divineans != None:
@@ -63,5 +64,16 @@ class Seer(Villager.Villager):
         elif not self.isdivine:
             self.isdivine = True
             return cb.DIVINE(self.divineans[0], self.divineans[1])
+        index = 0
+        while True:
+            if self.talk_turn <= 3:
+                return cb.skip()
+            if index == self.playerNum:
+                return cb.skip()
+            if not self.istalk_vote[index]:
+                self.istalk_vote[index] = True
+                return cb.INQUIRE(index, cb.VOTE("ANY"))
+            else:
+                index += 1
         else:
             return cb.skip()

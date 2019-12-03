@@ -12,5 +12,4 @@ if __name__ == "__main__":
     # with open(config.OUTPUT_PATH + "/Config.txt", "w") as f:
     #    f.write(config.output_config())
 
-    print("Training start")
     model.train()
