@@ -1,4 +1,5 @@
-
+result*
 log
 *.pyc
 data
+*.zip
