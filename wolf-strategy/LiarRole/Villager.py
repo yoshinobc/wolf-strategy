@@ -185,11 +185,11 @@ class Villager(object):
             DISAGREEText = self.DISAGREESentenceQue.pop()
             return cb.DISAGREE(DISAGREEText[0], DISAGREEText[1], DISAGREEText[2])
         index = 0
-        if self.talk_step >= 5:
+        if self.talk_step >= 4:
             while True:
                 if index == self.playerNum:
                     return cb.skip()
-                if not self.istalk_vote[index] and index != self.agentIdx:
+                if not self.istalk_vote[index] and index != self.agentIdx and self.base_info["statusMap"][str(index+1)] == "ALIVE":
                     self.istalk_vote[index] = True
                     return cb.INQUIRE(index, cb.VOTE("ANY"))
                 else:

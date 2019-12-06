@@ -70,7 +70,7 @@ class Seer(Villager.Villager):
                 return cb.skip()
             if index == self.playerNum:
                 return cb.skip()
-            if not self.istalk_vote[index]:
+            if not self.istalk_vote[index] and self.base_info["statusMap"][str(index + 1)] == "ALIVE":
                 self.istalk_vote[index] = True
                 return cb.INQUIRE(index, cb.VOTE("ANY"))
             else:

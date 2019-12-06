@@ -12,7 +12,7 @@ class Seer(Villager.Villager):
         super().update_talk_agreedisagree(agent, idx, content)
         if content[0] == "REQUEST" and content[1] == self.agentIdx:
             text2 = content[2]
-            content2 = splitText(text2)
+            content2 = splitText.splitText(text2)
             if content2[0] == "DIVINE":
                 if content2[1] == self.talk_voteop:
                     self.requestdivine = content2[1]
@@ -36,7 +36,7 @@ class Seer(Villager.Villager):
         self.talk_step += 1
         if self.co_rate != 2:
             self.co_rate = random.uniform(0, 1)
-        if not self.isCo and self.day == 1 and self.co_rate >= 0.5:
+        if not self.isCo and self.day == 1 and self.co_rate >= 0:
             self.isCo = True
             if self.co_rate == 2:
                 return cb.AND(cb.AGREE(self.agree_co[0], self.agree_co[1], self.agree_co[2]), cb.COMINGOUT(self.agentIdx, "SEER"))
@@ -75,11 +75,11 @@ class Seer(Villager.Villager):
             DISAGREEText = self.DISAGREESentenceQue.pop()
             return cb.DISAGREE(DISAGREEText[0], DISAGREEText[1], DISAGREEText[2])
         index = 0
-        if self.talk_step >= 5:
+        if self.talk_step >= 3:
             while True:
                 if index == self.playerNum:
                     return cb.skip()
-                if not self.istalk_vote[index] and index != self.agentIdx:
+                if not self.istalk_vote[index] and index != self.agentIdx and self.base_info["statusMap"][str(index+1)] == "ALIVE":
                     self.istalk_vote[index] = True
                     return cb.INQUIRE(index, cb.VOTE("ANY"))
                 else:

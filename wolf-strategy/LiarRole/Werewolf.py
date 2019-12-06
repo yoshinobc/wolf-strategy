@@ -15,7 +15,7 @@ class Werewolf(Villager.Villager):
         self.talk_step += 1
         if self.co_rate != 2:
             self.co_rate = random.uniform(0, 1)
-        if not self.isCo and self.day == 1 and self.co_rate >= 0.5:
+        if not self.isCo and self.day == 1 and self.co_rate >= 0.3:
             self.isCo = True
             if self.co_rate == 2:
                 return cb.AND(cb.AGREE(self.agree_co[0], self.agree_co[1], self.agree_co[2]), cb.COMINGOUT(self.agentIdx, "VILLAGER"))
@@ -54,7 +54,7 @@ class Werewolf(Villager.Villager):
             while True:
                 if index == self.playerNum:
                     return cb.skip()
-                if not self.istalk_vote[index] and index != self.agentIdx:
+                if not self.istalk_vote[index] and index != self.agentIdx and self.base_info["statusMap"][str(index+1)] == "ALIVE":
                     self.istalk_vote[index] = True
                     return cb.INQUIRE(index, cb.VOTE("ANY"))
                 else:

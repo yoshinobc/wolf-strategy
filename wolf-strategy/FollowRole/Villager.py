@@ -100,7 +100,7 @@ class Villager(object):
 
         elif not self.request_vote and self.talk_turn >= 3:
             for d in self.base_info["statusMap"].items():
-                if d[1] == "ALIVE":
+                if d[1] == "ALIVE" and d[0] != str(self.agentIdx + 1):
                     return cb.REQUEST(int(d[0]) - 1, cb.REQUEST(self.agentIdx, cb.VOTE("ANY")))
         index = 0
         while True:
@@ -108,7 +108,7 @@ class Villager(object):
                 return cb.skip()
             if index == self.playerNum:
                 return cb.skip()
-            if not self.istalk_vote[index]:
+            if not self.istalk_vote[index] and self.base_info["statusMap"][str(index + 1)] == "ALIVE":
                 self.istalk_vote[index] = True
                 return cb.INQUIRE(index, cb.VOTE("ANY"))
             else:
