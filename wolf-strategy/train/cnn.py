@@ -1,16 +1,16 @@
 """
 all
-{'BECAUSE': 892618, 'COMINGOUT': 1041994, 'ESTIMATE': 1577232, 'INQUIRE': 80289, 'DIVINED': 441716, 'VOTE': 4431009, 'REQUEST': 3266716, 'DAY': 415393, 'DISAGREE': 915777}
+{'COMINGOUT': 634072, 'INQUIRE': 179354, 'BECAUSE': 722438, 'REQUEST': 2230104, 'DISAGREE': 802439, 'DAY': 252538, 'ESTIMATE': 751327, 'VOTE': 3519579, 'DIVINED': 268272, 'AGREE': 1097805}
 sample
-{'BECAUSE': 203222, 'COMINGOUT': 150694, 'ESTIMATE': 198440, 'DIVINED': 266788, 'VOTE': 473527, 'REQUEST': 530173, 'DAY': 415393}
+{'COMINGOUT': 81929, 'BECAUSE': 112966, 'REQUEST': 321456, 'DAY': 252538, 'ESTIMATE': 86769, 'VOTE': 284909, 'DIVINED': 165636}
 calm
-{'BECAUSE': 280360, 'COMINGOUT': 479548, 'ESTIMATE': 560720, 'DIVINED': 35195, 'VOTE': 1092545, 'REQUEST': 511923, 'DISAGREE': 915777}
+{'COMINGOUT': 293401, 'BECAUSE': 166834, 'REQUEST': 309830, 'DISAGREE': 517951, 'ESTIMATE': 333668, 'VOTE': 648726, 'DIVINED': 19449, 'AGREE': 270526}
 liar
-{'BECAUSE': 205750, 'COMINGOUT': 198725, 'ESTIMATE': 411500, 'DIVINED': 70782, 'VOTE': 773395, 'REQUEST': 155949}
+{'COMINGOUT': 122591, 'INQUIRE': 144087, 'BECAUSE': 277193, 'DISAGREE': 284488, 'VOTE': 1022899, 'DIVINED': 29723, 'AGREE': 255747}
 repel
-{'BECAUSE': 203286, 'COMINGOUT': 197452, 'ESTIMATE': 406572, 'DIVINED': 68951, 'VOTE': 763859, 'REQUEST': 153803}
+{'COMINGOUT': 123386, 'BECAUSE': 165445, 'REQUEST': 118580, 'ESTIMATE': 330890, 'VOTE': 615030, 'DIVINED': 53464, 'AGREE': 366072}
 follow
-{'COMINGOUT': 15575, 'VOTE': 1327683, 'REQUEST': 1914868, 'INQUIRE': 80289}
+{'COMINGOUT': 12765, 'INQUIRE': 35267, 'VOTE': 948015, 'REQUEST': 1480238, 'AGREE': 205460}
 """
 """
 import numpy as np
@@ -137,7 +137,6 @@ class strategyCNN(object):
         print(self.all_repel)
         print(self.all_follow)
 
-        exit()
         self.X_train, self.X_test = X_train[:int(len(
             X_train)*self.config.TRAIN_PAR_TEST)], X_train[int(len(X_train)*self.config.TRAIN_PAR_TEST) + 1:]
         self.Y_train_1, self.Y_test_1 = Y_train_1[:int(len(
@@ -151,8 +150,24 @@ class strategyCNN(object):
         self.Y_train_5, self.Y_test_5 = Y_train_5[:int(len(
             Y_train_5)*self.config.TRAIN_PAR_TEST)], Y_train_5[int(len(Y_train_5)*self.config.TRAIN_PAR_TEST) + 1:]
 
+        self.X_test, self.X_valid = self.X_test[:int(len(
+            self.X_test)*self.config.TEST_PAR_VALID)], self.X_test[int(len(self.X_test)*self.config.TEST_PAR_VALID) + 1:]
+
+        self.Y_test_1, self.Y_valid_1 = self.Y_test_1[:int(len(
+            self.Y_test_1)*self.config.TEST_PAR_VALID)], self.Y_test_1[int(len(self.Y_test_1)*self.config.TEST_PAR_VALID) + 1:]
+        self.Y_test_2, self.Y_valid_2 = self.Y_test_2[:int(len(
+            self.Y_test_2)*self.config.TEST_PAR_VALID)], self.Y_test_2[int(len(self.Y_test_2)*self.config.TEST_PAR_VALID) + 1:]
+        self.Y_test_3, self.Y_valid_3 = self.Y_test_3[:int(len(
+            self.Y_test_3)*self.config.TEST_PAR_VALID)], self.Y_test_3[int(len(self.Y_test_3)*self.config.TEST_PAR_VALID) + 1:]
+        self.Y_test_4, self.Y_valid_4 = self.Y_test_4[:int(len(
+            self.Y_test_4)*self.config.TEST_PAR_VALID)], self.Y_test_4[int(len(self.Y_test_4)*self.config.TEST_PAR_VALID) + 1:]
+        self.Y_test_5, self.Y_valid_5 = self.Y_test_5[:int(len(
+            self.Y_test_5)*self.config.TEST_PAR_VALID)], self.Y_test_5[int(len(self.Y_test_5)*self.config.TEST_PAR_VALID) + 1:]
+
+
         self.X_train = np.array(self.X_train)
         self.X_test = np.array(self.X_test)
+        self.X_valid = np.array(self.X_valid)
         self.Y_train_1 = np.array(self.Y_train_1)
         self.Y_train_2 = np.array(self.Y_train_2)
         self.Y_train_3 = np.array(self.Y_train_3)
@@ -163,6 +178,12 @@ class strategyCNN(object):
         self.Y_test_3 = np.array(self.Y_test_3)
         self.Y_test_4 = np.array(self.Y_test_4)
         self.Y_test_5 = np.array(self.Y_test_5)
+        self.Y_valid_1 = np.array(self.Y_valid_1)
+        self.Y_valid_2 = np.array(self.Y_valid_2)
+        self.Y_valid_3 = np.array(self.Y_valid_3)
+        self.Y_valid_4 = np.array(self.Y_valid_4)
+        self.Y_valid_5 = np.array(self.Y_valid_5)
+
 
         os.makedirs(self.config.OUTPUT_PATH+"/data", exist_ok=True)
         pickle.dump(self.X_train, open(self.config.OUTPUT_PATH +
@@ -189,6 +210,20 @@ class strategyCNN(object):
                                          "/data/Y_train_5.pkl", mode="wb"))
         pickle.dump(self.Y_test_5, open(self.config.OUTPUT_PATH +
                                         "/data/Y_test_5.pkl", mode="wb"))
+
+
+        pickle.dump(self.X_valid, open(self.config.OUTPUT_PATH +
+                              "/data/X_valid.pkl", mode="wb"))
+        pickle.dump(self.Y_valid_1, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_valid_1.pkl", mode="wb"))
+        pickle.dump(self.Y_valid_2, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_valid_2.pkl", mode="wb"))
+        pickle.dump(self.Y_valid_3, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_valid_3.pkl", mode="wb"))
+        pickle.dump(self.Y_valid_4, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_valid_4.pkl", mode="wb"))
+        pickle.dump(self.Y_valid_5, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_valid_5.pkl", mode="wb"))
 
     def build_network_cnn(self):
         main_input = Input(shape=self.X_train.shape[1:])
@@ -292,6 +327,8 @@ class strategyCNN(object):
                 open(self.config.DATA_PATH + "/X_train.pkl", "rb"))
             self.X_test = pickle.load(
                 open(self.config.DATA_PATH + "/X_test.pkl", "rb"))
+            self.X_valid = pickle.load(
+                open(self.config.DATA_PATH + "/X_valid.pkl", "rb"))
             self.Y_train_1 = pickle.load(
                 open(self.config.DATA_PATH + "/Y_train_1.pkl", "rb"))
             self.Y_test_1 = pickle.load(
@@ -312,6 +349,17 @@ class strategyCNN(object):
                 open(self.config.DATA_PATH + "/Y_train_5.pkl", "rb"))
             self.Y_test_5 = pickle.load(
                 open(self.config.DATA_PATH + "/Y_test_5.pkl", "rb"))
+            self.Y_valid_1 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_valid_1.pkl", "rb"))
+            self.Y_valid_2 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_valid_2.pkl", "rb"))
+            self.Y_valid_3 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_valid_3.pkl", "rb"))
+            self.Y_valid_4 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_valid_4.pkl", "rb"))
+            self.Y_valid_5 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_valid_5.pkl", "rb"))
+
         else:
             self.init_data()
         print("finish init_data")
@@ -320,6 +368,7 @@ class strategyCNN(object):
             self.network = self.build_network_cnn()
         elif self.config.NETWORK == "GCNN":
             self.X_test = np.array(self.X_test)
+            self.X_valid = np.array(self.X_valid)
             self.network = self.build_network()
         else:
             self.X_test = np.array(self.X_test)
@@ -334,6 +383,12 @@ class strategyCNN(object):
                 X_tra = self.X_t.reshape(
                     1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
                 self.X_test_.append(X_tra)
+            self.X_valid = np.array(self.X_valid)
+            self.X_valid_ = []
+            for self.X_t in self.X_valid:
+                X_vali = self.X_t.reshape(1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
+                self.X_valid_.append(X_vali)
+
             self.X_test_ = np.array(self.X_test_)
             self.X_train = self.X_train_
             self.X_test = self.X_test_
@@ -364,6 +419,9 @@ class strategyCNN(object):
             self.Y_test_1, self.Y_test_2, self.Y_test_3, self.Y_test_4, self.Y_test_5 = np.argmax(self.Y_test_1, axis=1), np.argmax(
                 self.Y_test_2, axis=1), np.argmax(self.Y_test_3, axis=1), np.argmax(self.Y_test_4, axis=1), np.argmax(self.Y_test_5, axis=1)
 
+
+            self.Y_valid_1, self.Y_valid_2, self.Y_valid_3, self.Y_valid_4, self.Y_valid_5 = np.argmax(self.Y_valid_1, axis=1), np.argmax(self.Y_valid_2, axis=1), np.argmax(self.Y_valid_3, axis=1), np.argmax(self.Y_valid_4, axis=1), np.argmax(self.Y_valid_5, axis=1)
+
             evaluate(self.Y_test_1, self.y_pred_1, "test1.png")
             evaluate(self.Y_test_2, self.y_pred_2, "test2.png")
             evaluate(self.Y_test_3, self.y_pred_3, "test3.png")
@@ -384,8 +442,8 @@ class strategyCNN(object):
                 batch_size=self.config.BATCH_SIZE,
                 epochs=self.config.EPOCH,
                 validation_data=(
-                    self.X_test, [self.Y_test_1, self.Y_test_2,
-                                  self.Y_test_3, self.Y_test_4, self.Y_test_5]
+                    self.X_valid, [self.Y_valid_1, self.Y_valid_2,
+                                  self.Y_valid_3, self.Y_valid_4, self.Y_valid_5]
                 ))
 
             self.network.save_weights(self.config.OUTPUT_PATH + "/param.h5")
@@ -398,15 +456,9 @@ class strategyCNN(object):
             self.Y_test_1, self.Y_test_2, self.Y_test_3, self.Y_test_4, self.Y_test_5 = np.argmax(
                 self.Y_test_1, axis=1), np.argmax(self.Y_test_2, axis=1), np.argmax(self.Y_test_3, axis=1), np.argmax(self.Y_test_4, axis=1), np.argmax(self.Y_test_5, axis=1)
 
-            evaluate(self.Y_test_1, self.y_pred_1,
-                     self.config.OUTPUT_PATH + "/test1.png")
-            evaluate(self.Y_test_2, self.y_pred_2,
-                     self.config.OUTPUT_PATH + "/test2.png")
-            evaluate(self.Y_test_3, self.y_pred_3,
-                     self.config.OUTPUT_PATH + "/test3.png")
-            evaluate(self.Y_test_4, self.y_pred_4,
-                     self.config.OUTPUT_PATH + "/test4.png")
-            evaluate(self.Y_test_5, self.y_pred_5,
-                     self.config.OUTPUT_PATH + "/test5.png")
-            pickle.dump(history, open(self.config.OUTPUT_PATH +
-                                      "/history_" + self.config.NETWORK + ".pkl", mode="wb"))
+            evaluate(self.Y_test_1, self.y_pred_1,self.config.OUTPUT_PATH + "/test1.png")
+            evaluate(self.Y_test_2, self.y_pred_2,self.config.OUTPUT_PATH + "/test2.png")
+            evaluate(self.Y_test_3, self.y_pred_3,self.config.OUTPUT_PATH + "/test3.png")
+            evaluate(self.Y_test_4, self.y_pred_4,self.config.OUTPUT_PATH + "/test4.png")
+            evaluate(self.Y_test_5, self.y_pred_5,self.config.OUTPUT_PATH + "/test5.png")
+            pickle.dump(history, open(self.config.OUTPUT_PATH +"/history_" + self.config.NETWORK + ".pkl", mode="wb"))

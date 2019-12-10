@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-def plot(count_dict):
+def plot(count_dict,name):
     key_list = []
     value_list = []
     for key, value in count_dict.items():
@@ -11,23 +11,22 @@ def plot(count_dict):
     height = np.array(value_list)
     fix = plt.figure(figsize=(9.0, 6.0))
     plt.bar(left, height,tick_label=left, align="center")
-    plt.show()
+    plt.savefig(name+".png")
 
-all_dict = {'BECAUSE': 892618, 'COMINGOUT': 1041994, 'ESTIMATE': 1577232, 'INQUIRE': 80289, 'DIVINED': 441716, 'VOTE': 4431009, 'REQUEST': 3266716, 'DAY': 415393, 'DISAGREE': 915777}
+all_dict = {'COMINGOUT': 634072, 'INQUIRE': 179354, 'BECAUSE': 722438, 'REQUEST': 2230104, 'DISAGREE': 802439, 'DAY': 252538, 'ESTIMATE': 751327, 'VOTE': 3519579, 'DIVINED': 268272, 'AGREE': 1097805}
 
-sample_dict = {'BECAUSE': 203222, 'COMINGOUT': 150694, 'ESTIMATE': 198440, 'DIVINED': 266788, 'VOTE': 473527, 'REQUEST': 530173, 'DAY': 415393}
+sample_dict = {'COMINGOUT': 81929, 'BECAUSE': 112966, 'REQUEST': 321456, 'DAY': 252538, 'ESTIMATE': 86769, 'VOTE': 284909, 'DIVINED': 165636}
 
-calm_dict = {'BECAUSE': 280360, 'COMINGOUT': 479548, 'ESTIMATE': 560720, 'DIVINED': 35195, 'VOTE': 1092545, 'REQUEST': 511923, 'DISAGREE': 915777}
+calm_dict = {'COMINGOUT': 293401, 'BECAUSE': 166834, 'REQUEST': 309830, 'DISAGREE': 517951, 'ESTIMATE': 333668, 'VOTE': 648726, 'DIVINED': 19449, 'AGREE': 270526}
 
-liar_dict = {'BECAUSE': 205750, 'COMINGOUT': 198725, 'ESTIMATE': 411500, 'DIVINED': 70782, 'VOTE': 773395, 'REQUEST': 155949}
+liar_dict = {'COMINGOUT': 122591, 'INQUIRE': 144087, 'BECAUSE': 277193, 'DISAGREE': 284488, 'VOTE': 1022899, 'DIVINED': 29723, 'AGREE': 255747}
 
-repel_dict = {'BECAUSE': 203286, 'COMINGOUT': 197452, 'ESTIMATE': 406572, 'DIVINED': 68951, 'VOTE': 763859, 'REQUEST': 153803}
+repel_dict = {'COMINGOUT': 123386, 'BECAUSE': 165445, 'REQUEST': 118580, 'ESTIMATE': 330890, 'VOTE': 615030, 'DIVINED': 53464, 'AGREE': 366072}
 
-follow_dict = {'COMINGOUT': 15575, 'VOTE': 1327683, 'REQUEST': 1914868, 'INQUIRE': 80289}
-
-plot(all_dict)
-plot(sample_dict)
-plot(calm_dict)
-plot(liar_dict)
-plot(repel_dict)
-plot(follow_dict)
+follow_dict = {'COMINGOUT': 12765, 'INQUIRE': 35267, 'VOTE': 948015, 'REQUEST': 1480238, 'AGREE': 205460}
+plot(all_dict,"all")
+plot(sample_dict,"sample")
+plot(calm_dict,"calm")
+plot(liar_dict,"liar")
+plot(repel_dict,"repel")
+plot(follow_dict,"follow")

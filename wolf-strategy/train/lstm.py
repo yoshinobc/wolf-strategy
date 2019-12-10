@@ -102,6 +102,25 @@ class strategyLSTM(object):
             Y_train_4)*self.config.TRAIN_PAR_TEST)], Y_train_4[int(len(Y_train_4)*self.config.TRAIN_PAR_TEST) + 1:]
         self.Y_train_5, self.Y_test_5 = Y_train_5[:int(len(
             Y_train_5)*self.config.TRAIN_PAR_TEST)], Y_train_5[int(len(Y_train_5)*self.config.TRAIN_PAR_TEST) + 1:]
+
+        self.X_test, self.X_valid = self.X_test[:int(len(
+            self.X_train)*self.config.TEST_PAR_VALID)], self.X_train[int(len(self.X_train)*self.config.TEST_PAR_VALID) + 1:]
+
+        self.Y_test_1, self.Y_valid_1 = self.Y_train_1[:int(len(
+            self.Y_train_1)*self.config.TEST_PAR_VALID)], self.Y_train_1[int(len(self.Y_train_1)*self.config.TEST_PAR_VALID) + 1:]
+
+        self.Y_test_2, self.Y_valid_2 = self.Y_train_2[:int(len(
+            self.Y_train_2)*self.config.TEST_PAR_VALID)], self.Y_train_2[int(len(self.Y_train_2)*self.config.TEST_PAR_VALID) + 1:]
+
+        self.Y_test_3, self.Y_valid_3 = self.Y_train_3[:int(len(
+            self.Y_train_3) * self.config.TEST_PAR_VALID)], self.Y_train_3[int(len(self.Y_train_3) * self.config.TEST_PAR_VALID) + 1:]
+
+        self.Y_test_4, self.Y_valid_4 = self.Y_train_4[:int(len(
+            self.Y_train_4) * self.config.TEST_PAR_VALID)], self.Y_train_4[int(len(self.Y_train_4) * self.config.TEST_PAR_VALID) + 1:]
+
+        self.Y_test_5, self.Y_valid_5 = self.Y_train_5[:int(len(
+            self.Y_train_5)*self.config.TEST_PAR_VALID)], self.Y_train_5[int(len(self.Y_train_5)*self.config.TEST_PAR_VALID) + 1:]
+
         os.makedirs(self.config.OUTPUT_PATH+"/data", exist_ok=True)
         pickle.dump(self.X_train, open(self.config.OUTPUT_PATH +
                                        "/data/X_train.pkl", mode="wb"))
@@ -127,6 +146,19 @@ class strategyLSTM(object):
                                          "/data/Y_train_5.pkl", mode="wb"))
         pickle.dump(self.Y_test_5, open(self.config.OUTPUT_PATH +
                                         "/data/Y_test_5.pkl", mode="wb"))
+
+        pickle.dump(self.X_valid, open(self.config.OUTPUT_PATH +
+                                       "/data/X_valid.pkl", mode="wb"))
+        pickle.dump(self.Y_valid_1, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_valid_1.pkl", mode="wb"))
+        pickle.dump(self.Y_valid_2, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_valid_2.pkl", mode="wb"))
+        pickle.dump(self.Y_valid_3, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_valid_3.pkl", mode="wb"))
+        pickle.dump(self.Y_valid_4, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_valid_4.pkl", mode="wb"))
+        pickle.dump(self.Y_valid_5, open(self.config.OUTPUT_PATH +
+                                         "/data/Y_valid_5.pkl", mode="wb"))
 
     def build_network(self):
 
@@ -166,10 +198,38 @@ class strategyLSTM(object):
                 open(self.config.DATA_PATH + "/X_train.pkl", "rb"))
             self.X_test = pickle.load(
                 open(self.config.DATA_PATH + "/X_test.pkl", "rb"))
-            self.Y_train = pickle.load(
-                open(self.config.DATA_PATH + "/Y_train.pkl", "rb"))
-            self.Y_test = pickle.load(
-                open(self.config.DATA_PATH + "/Y_test.pkl", "rb"))
+            self.X_valid = pickle.load(
+                open(self.config.DATA_PATH + "/X_valid.pkl", "rb"))
+            self.Y_train_1 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_train_1.pkl", "rb"))
+            self.Y_test_1 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_test_1.pkl", "rb"))
+            self.Y_train_2 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_train_2.pkl", "rb"))
+            self.Y_test_2 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_test_2.pkl", "rb"))
+            self.Y_train_3 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_train_3.pkl", "rb"))
+            self.Y_test_3 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_test_3.pkl", "rb"))
+            self.Y_train_4 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_train_4.pkl", "rb"))
+            self.Y_test_4 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_test_4.pkl", "rb"))
+            self.Y_train_5 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_train_5.pkl", "rb"))
+            self.Y_test_5 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_test_5.pkl", "rb"))
+            self.Y_valid_1 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_valid_1.pkl", "rb"))
+            self.Y_valid_2 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_valid_2.pkl", "rb"))
+            self.Y_valid_3 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_valid_3.pkl", "rb"))
+            self.Y_valid_4 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_valid_4.pkl", "rb"))
+            self.Y_valid_5 = pickle.load(
+                open(self.config.DATA_PATH + "/Y_valid_5.pkl", "rb"))
         else:
             self.init_data()
         print("finish init_data")
@@ -198,6 +258,12 @@ class strategyLSTM(object):
         self.Y_test_3 = np.array(self.Y_test_3)
         self.Y_test_4 = np.array(self.Y_test_4)
         self.Y_test_5 = np.array(self.Y_test_5)
+        self.X_valid = np.array(self.X_valid)
+        self.Y_valid_1 = np.array(self.Y_valid_1)
+        self.Y_valid_2 = np.array(self.Y_valid_2)
+        self.Y_valid_3 = np.array(self.Y_valid_3)
+        self.Y_valid_4 = np.array(self.Y_valid_4)
+        self.Y_valid_5 = np.array(self.Y_valid_5)
         history = self.network.fit(self.X_train,
                                    {
                                        "output_1": self.Y_train_1,
@@ -209,8 +275,8 @@ class strategyLSTM(object):
                                    batch_size=self.config.BATCH_SIZE,
                                    epochs=self.config.EPOCH,
                                    validation_data=(
-                                       self.X_test, [
-                                           self.Y_test_1, self.Y_test_2, self.Y_test_3, self.Y_test_4, self.Y_test_5]
+                                       self.X_valid, [
+                                           self.Y_valid_1, self.Y_valid_2, self.Y_valid_3, self.Y_valid_4, self.Y_valid_5]
                                    ))
         self.network.save_weights(self.config.OUTPUT_PATH + "/param.h5")
         self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = self.network.predict(
