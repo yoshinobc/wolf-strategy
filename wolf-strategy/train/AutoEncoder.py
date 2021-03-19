@@ -5,21 +5,30 @@ import numpy as np
 from sklearn.metrics import confusion_matrix
 
 import tensorflow as tf
-from keras.models import Sequential, Model
-from keras.layers import LSTM, Dense, Embedding, Input
-from keras.models import Sequential
+from keras.layers import (
+    Input,
+    Activation,
+    Dropout,
+    Flatten,
+    Dense,
+    Reshape,
+    Conv2D)
+from keras.layers.convolutional import Convolution2D, MaxPooling2D
+from keras.layers.normalization import BatchNormalization
+from keras.models import Model
 from keras.optimizers import Adam
-from keras.preprocessing.sequence import pad_sequences
-from keras.preprocessing.text import Tokenizer
+from keras.layers.pooling import MaxPool2D, AveragePooling2D
 import os
 from tqdm import tqdm
 import pickle
 from keras.utils import plot_model
-from utils import preprocess2
-
+from utils import preprocess1
+from utils import preprocess3
+import matplotlib.pyplot as plt
+import random
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
+random.seed(11)
 
 
 def evaluate(y_true, y_pred, name):
@@ -31,42 +40,14 @@ def evaluate(y_true, y_pred, name):
     plt.figure(figsize=(10, 7))
     sns.heatmap(df_cmx, annot=True)
     plt.savefig(name)
-    plt.show()
+    # plt.show()
 
 
-class strategyLSTM(object):
+class strategyAE(object):
     def __init__(self, config):
         self.config = config
 
-    def myembedding(self, X_train, max_len=90):
-        self.max_len = max_len
-        self.pre_X_train = []
-        self.index = 1
-        self.word2vector = {}
-        self.vector2word = {}
-        print("make word2vec")
-        for X in tqdm(X_train):
-            for X_ in X:
-                X_ = "".join(str(X_))
-                if X_ not in self.word2vector:
-                    self.word2vector[X_] = self.index
-                    self.vector2word[self.index] = X_
-                    self.index += 1
-        pickle.dump(self.word2vector, open(self.config.OUTPUT_PATH +
-                                           "/word2vector.pkl", mode="wb"))
-        print("conv word")
-        for X in tqdm(X_train):
-            self.pre_tmp = []
-            for X_ in X:
-                X_ = "".join(str(X_))
-                self.pre_tmp.append(self.word2vector[X_])
-            while len(self.pre_tmp) != max_len:
-                self.pre_tmp.append(0)
-            self.pre_X_train.append(self.pre_tmp)
-        return self.pre_X_train
-
     def init_data(self):
-        print("load_file")
         file_names = glob(self.config.LOG_PATH)
         X_train = []
         Y_train_1 = []
@@ -75,22 +56,61 @@ class strategyLSTM(object):
         Y_train_4 = []
         Y_train_5 = []
         random.seed(0)
+        self.count_all = {}
+        self.all_sample = {}
+        self.all_calm = {}
+        self.all_liar = {}
+        self.all_repel = {}
+        self.all_follow = {}
         random.shuffle(file_names)
         file_names = file_names[:1000]
         for name in tqdm(file_names):
-            pre1 = preprocess2.preprocess2()
+            pre1 = preprocess1.preprocess1()
             pre1.update(name)
             if pre1.is_finish:
-                X_train.append(pre1.f_maps)
+                for key, value in pre1.count_content.items():
+                    if key in self.count_all:
+                        self.count_all[key] += value
+                    else:
+                        self.count_all[key] = value
+                for key, value in pre1.count_sample.items():
+                    if key in self.all_sample:
+                        self.all_sample[key] += value
+                    else:
+                        self.all_sample[key] = value
+                for key, value in pre1.count_calm.items():
+                    if key in self.all_calm:
+                        self.all_calm[key] += value
+                    else:
+                        self.all_calm[key] = value
+                for key, value in pre1.count_liar.items():
+                    if key in self.all_liar:
+                        self.all_liar[key] += value
+                    else:
+                        self.all_liar[key] = value
+                for key, value in pre1.count_repel.items():
+                    if key in self.all_repel:
+                        self.all_repel[key] += value
+                    else:
+                        self.all_repel[key] = value
+                for key, value in pre1.count_follow.items():
+                    if key in self.all_follow:
+                        self.all_follow[key] += value
+                    else:
+                        self.all_follow[key] = value
+                X_train.append(pre1.f_map)
                 Y_train_1.append(pre1.y_map1)
                 Y_train_2.append(pre1.y_map2)
                 Y_train_3.append(pre1.y_map3)
                 Y_train_4.append(pre1.y_map4)
                 Y_train_5.append(pre1.y_map5)
-            else:
-                print(name)
-        print("start embedding")
-        X_train = self.myembedding(X_train)
+        print(self.count_all)
+        print(self.all_sample)
+        print(self.all_calm)
+        print(self.all_liar)
+        print(self.all_repel)
+        print(self.all_follow)
+
         self.X_train, self.X_test = X_train[:int(len(
             X_train)*self.config.TRAIN_PAR_TEST)], X_train[int(len(X_train)*self.config.TRAIN_PAR_TEST) + 1:]
         self.Y_train_1, self.Y_test_1 = Y_train_1[:int(len(
@@ -105,22 +125,37 @@ class strategyLSTM(object):
             Y_train_5)*self.config.TRAIN_PAR_TEST)], Y_train_5[int(len(Y_train_5)*self.config.TRAIN_PAR_TEST) + 1:]
 
         self.X_test, self.X_valid = self.X_test[:int(len(
-            self.X_train)*self.config.TEST_PAR_VALID)], self.X_train[int(len(self.X_train)*self.config.TEST_PAR_VALID) + 1:]
+            self.X_test)*self.config.TEST_PAR_VALID)], self.X_test[int(len(self.X_test)*self.config.TEST_PAR_VALID) + 1:]
 
-        self.Y_test_1, self.Y_valid_1 = self.Y_train_1[:int(len(
-            self.Y_train_1)*self.config.TEST_PAR_VALID)], self.Y_train_1[int(len(self.Y_train_1)*self.config.TEST_PAR_VALID) + 1:]
+        self.Y_test_1, self.Y_valid_1 = self.Y_test_1[:int(len(
+            self.Y_test_1)*self.config.TEST_PAR_VALID)], self.Y_test_1[int(len(self.Y_test_1)*self.config.TEST_PAR_VALID) + 1:]
+        self.Y_test_2, self.Y_valid_2 = self.Y_test_2[:int(len(
+            self.Y_test_2)*self.config.TEST_PAR_VALID)], self.Y_test_2[int(len(self.Y_test_2)*self.config.TEST_PAR_VALID) + 1:]
+        self.Y_test_3, self.Y_valid_3 = self.Y_test_3[:int(len(
+            self.Y_test_3)*self.config.TEST_PAR_VALID)], self.Y_test_3[int(len(self.Y_test_3)*self.config.TEST_PAR_VALID) + 1:]
+        self.Y_test_4, self.Y_valid_4 = self.Y_test_4[:int(len(
+            self.Y_test_4)*self.config.TEST_PAR_VALID)], self.Y_test_4[int(len(self.Y_test_4)*self.config.TEST_PAR_VALID) + 1:]
+        self.Y_test_5, self.Y_valid_5 = self.Y_test_5[:int(len(
+            self.Y_test_5)*self.config.TEST_PAR_VALID)], self.Y_test_5[int(len(self.Y_test_5)*self.config.TEST_PAR_VALID) + 1:]
 
-        self.Y_test_2, self.Y_valid_2 = self.Y_train_2[:int(len(
-            self.Y_train_2)*self.config.TEST_PAR_VALID)], self.Y_train_2[int(len(self.Y_train_2)*self.config.TEST_PAR_VALID) + 1:]
-
-        self.Y_test_3, self.Y_valid_3 = self.Y_train_3[:int(len(
-            self.Y_train_3) * self.config.TEST_PAR_VALID)], self.Y_train_3[int(len(self.Y_train_3) * self.config.TEST_PAR_VALID) + 1:]
-
-        self.Y_test_4, self.Y_valid_4 = self.Y_train_4[:int(len(
-            self.Y_train_4) * self.config.TEST_PAR_VALID)], self.Y_train_4[int(len(self.Y_train_4) * self.config.TEST_PAR_VALID) + 1:]
-
-        self.Y_test_5, self.Y_valid_5 = self.Y_train_5[:int(len(
-            self.Y_train_5)*self.config.TEST_PAR_VALID)], self.Y_train_5[int(len(self.Y_train_5)*self.config.TEST_PAR_VALID) + 1:]
+        self.X_train = np.array(self.X_train)
+        self.X_test = np.array(self.X_test)
+        self.X_valid = np.array(self.X_valid)
+        self.Y_train_1 = np.array(self.Y_train_1)
+        self.Y_train_2 = np.array(self.Y_train_2)
+        self.Y_train_3 = np.array(self.Y_train_3)
+        self.Y_train_4 = np.array(self.Y_train_4)
+        self.Y_train_5 = np.array(self.Y_train_5)
+        self.Y_test_1 = np.array(self.Y_test_1)
+        self.Y_test_2 = np.array(self.Y_test_2)
+        self.Y_test_3 = np.array(self.Y_test_3)
+        self.Y_test_4 = np.array(self.Y_test_4)
+        self.Y_test_5 = np.array(self.Y_test_5)
+        self.Y_valid_1 = np.array(self.Y_valid_1)
+        self.Y_valid_2 = np.array(self.Y_valid_2)
+        self.Y_valid_3 = np.array(self.Y_valid_3)
+        self.Y_valid_4 = np.array(self.Y_valid_4)
+        self.Y_valid_5 = np.array(self.Y_valid_5)
 
         os.makedirs(self.config.OUTPUT_PATH+"/data", exist_ok=True)
         pickle.dump(self.X_train, open(self.config.OUTPUT_PATH +
@@ -161,12 +196,14 @@ class strategyLSTM(object):
         pickle.dump(self.Y_valid_5, open(self.config.OUTPUT_PATH +
                                          "/data/Y_valid_5.pkl", mode="wb"))
 
-    def build_network(self):
-
-        main_input = Input(shape=(1, self.max_len,))
-        lstm = LSTM(self.config.HIDDEN_UNITS,
-                    return_sequences=False)(main_input)
-        x = Dense(50, activation="relu")(lstm)
+    def build_network_dense(self):
+        main_input = Input(shape=(len(self.X_train[1]),))
+        x = Dense(200,
+                  activation="relu")(main_input)
+        x = Dense(100, input_dim=200,
+                  activation="relu")(x)
+        x = Dense(50, input_dim=100,
+                  activation="relu")(x)
         output_1 = Dense(5, activation="softmax",
                          input_dim=50, name="output_1")(x)
         output_2 = Dense(5, activation="softmax",
@@ -179,9 +216,42 @@ class strategyLSTM(object):
                          input_dim=50, name="output_5")(x)
         model = Model(input=main_input, output=[
             output_1, output_2, output_3, output_4, output_5])
+        return model
 
+    def train(self):
+
+        self.init_data()
+        print("finish init_data")
+        self.X_train = np.array(self.X_train)
+        self.X_test = np.array(self.X_test)
+        self.X_train_ = []
+        for self.X_t in self.X_train:
+            X_tra = self.X_t.reshape(
+                1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
+            self.X_train_.append(X_tra)
+        self.X_train_ = np.array(self.X_train_)
+        self.X_test_ = []
+        for self.X_t in self.X_test:
+            X_tra = self.X_t.reshape(
+                1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
+            self.X_test_.append(X_tra)
+        self.X_valid = np.array(self.X_valid)
+        self.X_valid_ = []
+        for self.X_t in self.X_valid:
+            X_vali = self.X_t.reshape(
+                1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
+            self.X_valid_.append(X_vali)
+
+        self.X_test_ = np.array(self.X_test_)
+        self.X_train = np.array(self.X_train_)
+        self.X_test = np.array(self.X_test_)
+        self.X_valid = np.array(self.X_valid_)
+        self.network_ae = self.build_network_ae()
+
+        self.network = self.build_network_dense()
+        self.network.summary()
         opt = Adam(lr=self.config.LEARNING_RATE)
-        model.compile(loss={
+        self.network.compile(loss={
             "output_1": "categorical_crossentropy",
             "output_2": "categorical_crossentropy",
             "output_3": "categorical_crossentropy",
@@ -191,95 +261,31 @@ class strategyLSTM(object):
             optimizer=opt,
             metrics=["accuracy"]
         )
-        return model
-
-    def train(self):
-        if self.config.INIT_DATA:
-            self.X_train = pickle.load(
-                open(self.config.DATA_PATH + "/X_train.pkl", "rb"))
-            self.X_test = pickle.load(
-                open(self.config.DATA_PATH + "/X_test.pkl", "rb"))
-            self.X_valid = pickle.load(
-                open(self.config.DATA_PATH + "/X_valid.pkl", "rb"))
-            self.Y_train_1 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_train_1.pkl", "rb"))
-            self.Y_test_1 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_test_1.pkl", "rb"))
-            self.Y_train_2 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_train_2.pkl", "rb"))
-            self.Y_test_2 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_test_2.pkl", "rb"))
-            self.Y_train_3 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_train_3.pkl", "rb"))
-            self.Y_test_3 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_test_3.pkl", "rb"))
-            self.Y_train_4 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_train_4.pkl", "rb"))
-            self.Y_test_4 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_test_4.pkl", "rb"))
-            self.Y_train_5 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_train_5.pkl", "rb"))
-            self.Y_test_5 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_test_5.pkl", "rb"))
-            self.Y_valid_1 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_valid_1.pkl", "rb"))
-            self.Y_valid_2 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_valid_2.pkl", "rb"))
-            self.Y_valid_3 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_valid_3.pkl", "rb"))
-            self.Y_valid_4 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_valid_4.pkl", "rb"))
-            self.Y_valid_5 = pickle.load(
-                open(self.config.DATA_PATH + "/Y_valid_5.pkl", "rb"))
-        else:
-            self.init_data()
-        print("finish init_data")
-        self.network = self.build_network()
-        self.network.summary()
+        self.train_iterations_ae()
         self.train_iterations()
 
     def train_iterations(self):
         print("start fit")
-        print(np.array(self.X_train).shape)
-        self.X_train = np.array(self.X_train)
-        self.X_train = self.X_train.reshape(-1, 1, self.max_len)
-        self.X_test = np.array(self.X_test)
-        self.X_test = self.X_test.reshape(-1, 1, self.max_len)
-        print(np.array(self.X_train).shape)
+        #kmeans_model = KMeans(n_clusters=5,random_state=10)
 
-        self.X_train = np.array(self.X_train)
-        self.Y_train_1 = np.array(self.Y_train_1)
-        self.Y_train_2 = np.array(self.Y_train_2)
-        self.Y_train_3 = np.array(self.Y_train_3)
-        self.Y_train_4 = np.array(self.Y_train_4)
-        self.Y_train_5 = np.array(self.Y_train_5)
-        self.X_test = np.array(self.X_test)
-        self.Y_test_1 = np.array(self.Y_test_1)
-        self.Y_test_2 = np.array(self.Y_test_2)
-        self.Y_test_3 = np.array(self.Y_test_3)
-        self.Y_test_4 = np.array(self.Y_test_4)
-        self.Y_test_5 = np.array(self.Y_test_5)
-        self.X_valid = np.array(self.X_valid)
-        self.Y_valid_1 = np.array(self.Y_valid_1)
-        self.Y_valid_2 = np.array(self.Y_valid_2)
-        self.Y_valid_3 = np.array(self.Y_valid_3)
-        self.Y_valid_4 = np.array(self.Y_valid_4)
-        self.Y_valid_5 = np.array(self.Y_valid_5)
-        history = self.network.fit(self.X_train,
-                                   {
-                                       "output_1": self.Y_train_1,
-                                       "output_2": self.Y_train_2,
-                                       "output_3": self.Y_train_3,
-                                       "output_4": self.Y_train_4,
-                                       "output_5": self.Y_train_5
-                                   },
-                                   batch_size=self.config.BATCH_SIZE,
-                                   epochs=self.config.EPOCH,
-                                   validation_data=(
-                                       self.X_valid, [
-                                           self.Y_valid_1, self.Y_valid_2, self.Y_valid_3, self.Y_valid_4, self.Y_valid_5]
-                                   ))
+        history = self.network.fit(
+            self.X_train,
+            {
+                "output_1": self.Y_train_1,
+                "output_2": self.Y_train_2,
+                "output_3": self.Y_train_3,
+                "output_4": self.Y_train_4,
+                "output_5": self.Y_train_5
+            },
+            batch_size=self.config.BATCH_SIZE,
+            epochs=self.config.EPOCH,
+            validation_data=(
+                self.X_valid, [self.Y_valid_1, self.Y_valid_2,
+                               self.Y_valid_3, self.Y_valid_4, self.Y_valid_5]
+            ))
+
         self.network.save_weights(self.config.OUTPUT_PATH + "/param.h5")
+
         self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = self.network.predict(
             self.X_test, batch_size=len(self.X_test))
 
@@ -287,7 +293,9 @@ class strategyLSTM(object):
             self.y_pred_2, axis=1), np.argmax(self.y_pred_3, axis=1), np.argmax(self.y_pred_4, axis=1), np.argmax(self.y_pred_5, axis=1)
         self.Y_test_1, self.Y_test_2, self.Y_test_3, self.Y_test_4, self.Y_test_5 = np.argmax(
             self.Y_test_1, axis=1), np.argmax(self.Y_test_2, axis=1), np.argmax(self.Y_test_3, axis=1), np.argmax(self.Y_test_4, axis=1), np.argmax(self.Y_test_5, axis=1)
-
+        df_history = pd.DataFrame(history.history)
+        df_history.plot()
+        df_history.to_csv(self.config.OUTPUT_PATH + "/loss.png")
         evaluate(self.Y_test_1, self.y_pred_1,
                  self.config.OUTPUT_PATH + "/test1.png")
         evaluate(self.Y_test_2, self.y_pred_2,

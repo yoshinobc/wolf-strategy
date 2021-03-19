@@ -1,6 +1,6 @@
 import glob
 
-dir_lists = glob.glob("*")
+dir_lists = glob.glob("log_comp/*")
 prodir = []
 
 for dir in dir_lists:

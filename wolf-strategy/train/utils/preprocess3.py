@@ -3,11 +3,9 @@ import numpy as np
 from . import splitText
 
 "content_mapのヒストグラムを作成"
+#大会エージェントを使って予測
 
-# cnn.py
-
-
-class preprocess1(object):
+class preprocess3(object):
     def __init__(self):
         self.agentNum = 5
         self.content_map = {
@@ -39,27 +37,27 @@ class preprocess1(object):
         self.is_finish = True
 
     def update_status(self, contents):
-        if "Sample" in contents[5]:
+        if "calups" in contents[5]:
             agent = int(contents[2]) - 1
             self.y_map[agent * 5 + 0] = 1
             self.sample.append(agent)
 
-        elif "CALM" in contents[5]:
+        elif "sonoda" in contents[5]:
             agent = int(contents[2]) - 1
             self.y_map[agent * 5 + 1] = 1
             self.calm.append(agent)
 
-        elif "Liar" in contents[5]:
+        elif "yskn67" in contents[5]:
             agent = int(contents[2]) - 1
             self.y_map[agent * 5 + 2] = 1
             self.liar.append(agent)
 
-        elif "REPEL" in contents[5]:
+        elif "cantar" in contents[5]:
             agent = int(contents[2]) - 1
             self.y_map[agent * 5 + 3] = 1
             self.repel.append(agent)
 
-        elif "Follow" in contents[5]:
+        elif "Litt1eGirl" in contents[5]:
             agent = int(contents[2]) - 1
             self.y_map[agent * 5 + 4] = 1
             self.follow.append(agent)
@@ -134,6 +132,9 @@ class preprocess1(object):
     def update(self, file_name):
         f = open(file_name, mode="r")
         line = f.readline()
+        #print("l", file_name, line)
+        if line == "":
+            return
         if line[3] == "SEER":
             self.is_divine = True
         while line:

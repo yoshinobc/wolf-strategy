@@ -1,30 +1,6 @@
 """
-all
-{'COMINGOUT': 634072, 'INQUIRE': 179354, 'BECAUSE': 722438, 'REQUEST': 2230104, 'DISAGREE': 802439, 'DAY': 252538, 'ESTIMATE': 751327, 'VOTE': 3519579, 'DIVINED': 268272, 'AGREE': 1097805}
-sample
-{'COMINGOUT': 81929, 'BECAUSE': 112966, 'REQUEST': 321456, 'DAY': 252538, 'ESTIMATE': 86769, 'VOTE': 284909, 'DIVINED': 165636}
-calm
-{'COMINGOUT': 293401, 'BECAUSE': 166834, 'REQUEST': 309830, 'DISAGREE': 517951, 'ESTIMATE': 333668, 'VOTE': 648726, 'DIVINED': 19449, 'AGREE': 270526}
-liar
-{'COMINGOUT': 122591, 'INQUIRE': 144087, 'BECAUSE': 277193, 'DISAGREE': 284488, 'VOTE': 1022899, 'DIVINED': 29723, 'AGREE': 255747}
-repel
-{'COMINGOUT': 123386, 'BECAUSE': 165445, 'REQUEST': 118580, 'ESTIMATE': 330890, 'VOTE': 615030, 'DIVINED': 53464, 'AGREE': 366072}
-follow
-{'COMINGOUT': 12765, 'INQUIRE': 35267, 'VOTE': 948015, 'REQUEST': 1480238, 'AGREE': 205460}
-
-all
-{'COMINGOUT': 763656, 'VOTE': 1267263, 'ESTIMATE': 587384, 'DIVINED': 841553}
-calups
-{'COMINGOUT': 145459, 'VOTE': 148943, 'DIVINED': 89416}
-sonoda
-{'COMINGOUT': 175042, 'VOTE': 292379, 'DIVINED': 73531}
-yskn67
-{'COMINGOUT': 175244, 'VOTE': 94285, 'ESTIMATE': 399788, 'DIVINED': 557100}
-cantar
-{'COMINGOUT': 191812, 'VOTE': 289681, 'DIVINED': 73877}
-Litt1eGirl
-{'COMINGOUT': 76099, 'VOTE': 441975, 'ESTIMATE': 187596, 'DIVINED': 47629}
-
+Epoch 10/10
+99920/99920 [==============================] - 3s 26us/step - loss: 1.6333 - output_1_loss: 0.2427 - output_2_loss: 0.3354 - output_3_loss: 0.3512 - output_4_loss: 0.3437 - output_5_loss: 0.3604 - output_1_acc: 0.9022 - output_2_acc: 0.8607 - output_3_acc: 0.8543 - output_4_acc: 0.8595 - output_5_acc: 0.8499 - val_loss: 1.7313 - val_output_1_loss: 0.2595 - val_output_2_loss: 0.3420 - val_output_3_loss: 0.3591 - val_output_4_loss: 0.3739 - val_output_5_loss: 0.3968 - val_output_1_acc: 0.9006 - val_output_2_acc: 0.8622 - val_output_3_acc: 0.8552 - val_output_4_acc: 0.8438 - val_output_5_acc: 0.8396
 """
 
 from glob import glob
@@ -53,6 +29,7 @@ import pickle
 from keras.utils import plot_model
 from utils import preprocess1
 from utils import preprocess3
+from utils import preprocess4
 import matplotlib.pyplot as plt
 import random
 import pandas as pd
@@ -72,7 +49,7 @@ def evaluate(y_true, y_pred, name):
     # plt.show()
 
 
-class strategyCNN(object):
+class strategyCNN_post(object):
     def __init__(self, config):
         self.config = config
 
@@ -85,19 +62,22 @@ class strategyCNN(object):
         Y_train_4 = []
         Y_train_5 = []
         random.seed(0)
+        """
         self.count_all = {}
         self.all_sample = {}
         self.all_calm = {}
         self.all_liar = {}
         self.all_repel = {}
         self.all_follow = {}
+        """
         random.shuffle(file_names)
         file_names = file_names[:1000]
         for name in tqdm(file_names):
-            pre1 = preprocess1.preprocess1()
-            #pre1 = preprocess3.preprocess3()
+            #pre1 = preprocess1.preprocess1()
+            pre1 = preprocess4.preprocess3()
             pre1.update(name)
             if pre1.is_finish:
+                """
                 for key, value in pre1.count_content.items():
                     if key in self.count_all:
                         self.count_all[key] += value
@@ -128,18 +108,13 @@ class strategyCNN(object):
                         self.all_follow[key] += value
                     else:
                         self.all_follow[key] = value
+                """
                 X_train.append(pre1.f_map)
                 Y_train_1.append(pre1.y_map1)
                 Y_train_2.append(pre1.y_map2)
                 Y_train_3.append(pre1.y_map3)
                 Y_train_4.append(pre1.y_map4)
                 Y_train_5.append(pre1.y_map5)
-        print(self.count_all)
-        print(self.all_sample)
-        print(self.all_calm)
-        print(self.all_liar)
-        print(self.all_repel)
-        print(self.all_follow)
 
         self.X_train, self.X_test = X_train[:int(len(
             X_train)*self.config.TRAIN_PAR_TEST)], X_train[int(len(X_train)*self.config.TRAIN_PAR_TEST) + 1:]
@@ -228,7 +203,7 @@ class strategyCNN(object):
 
     def build_network_cnn(self):
         main_input = Input(shape=self.X_train.shape[1:])
-        output_dim = 5
+        output_dim = 4
         x = Conv2D(32, (2, 2), padding='same')(main_input)
         x = Activation('relu')(x)
         x = MaxPooling2D(pool_size=(2, 2))(x)
@@ -266,15 +241,15 @@ class strategyCNN(object):
                   activation="relu")(x)
         x = Dense(50, input_dim=100,
                   activation="relu")(x)
-        output_1 = Dense(5, activation="softmax",
+        output_1 = Dense(4, activation="softmax",
                          input_dim=50, name="output_1")(x)
-        output_2 = Dense(5, activation="softmax",
+        output_2 = Dense(4, activation="softmax",
                          input_dim=50, name="output_2")(x)
-        output_3 = Dense(5, activation="softmax",
+        output_3 = Dense(4, activation="softmax",
                          input_dim=50, name="output_3")(x)
-        output_4 = Dense(5, activation="softmax",
+        output_4 = Dense(4, activation="softmax",
                          input_dim=50, name="output_4")(x)
-        output_5 = Dense(5, activation="softmax",
+        output_5 = Dense(4, activation="softmax",
                          input_dim=50, name="output_5")(x)
         model = Model(input=main_input, output=[
             output_1, output_2, output_3, output_4, output_5])
@@ -367,6 +342,8 @@ class strategyCNN(object):
         self.X_train = np.array(self.X_train)
         if self.config.NETWORK == "CNN":
             self.network = self.build_network_cnn()
+            self.X_test = np.array(self.X_test)
+            self.X_valid = np.array(self.X_valid)
         elif self.config.NETWORK == "GCNN":
             self.X_test = np.array(self.X_test)
             self.X_valid = np.array(self.X_valid)
@@ -391,7 +368,7 @@ class strategyCNN(object):
                     1, self.X_t.shape[0]*self.X_t.shape[1]*self.X_t.shape[2]).astype("float32")[0]
                 self.X_valid_.append(X_vali)
 
-            self.X_test_ = np.array(self.X_test_)
+            #self.X_test_ = np.array(self.X_test_)
             self.X_train = np.array(self.X_train_)
             self.X_test = np.array(self.X_test_)
             self.X_valid = np.array(self.X_valid_)
@@ -434,7 +411,6 @@ class strategyCNN(object):
         else:
             print("start fit")
             #kmeans_model = KMeans(n_clusters=5,random_state=10)
-
             history = self.network.fit(
                 self.X_train,
                 {
@@ -450,7 +426,9 @@ class strategyCNN(object):
                     self.X_valid, [self.Y_valid_1, self.Y_valid_2,
                                    self.Y_valid_3, self.Y_valid_4, self.Y_valid_5]
                 ))
-
+            df_history = pd.DataFrame(history.history)
+            df_history.plot()
+            df_history.to_csv(self.config.OUTPUT_PATH + "/loss.png")
             self.network.save_weights(self.config.OUTPUT_PATH + "/param.h5")
 
             self.y_pred_1, self.y_pred_2, self.y_pred_3, self.y_pred_4, self.y_pred_5 = self.network.predict(
@@ -460,9 +438,7 @@ class strategyCNN(object):
                 self.y_pred_2, axis=1), np.argmax(self.y_pred_3, axis=1), np.argmax(self.y_pred_4, axis=1), np.argmax(self.y_pred_5, axis=1)
             self.Y_test_1, self.Y_test_2, self.Y_test_3, self.Y_test_4, self.Y_test_5 = np.argmax(
                 self.Y_test_1, axis=1), np.argmax(self.Y_test_2, axis=1), np.argmax(self.Y_test_3, axis=1), np.argmax(self.Y_test_4, axis=1), np.argmax(self.Y_test_5, axis=1)
-            df_history = pd.DataFrame(history.history)
-            df_history.plot()
-            df_history.to_csv(self.config.OUTPUT_PATH + "/loss.png")
+
             evaluate(self.Y_test_1, self.y_pred_1,
                      self.config.OUTPUT_PATH + "/test1.png")
             evaluate(self.Y_test_2, self.y_pred_2,

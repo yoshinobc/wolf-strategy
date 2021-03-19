@@ -1,6 +1,8 @@
 from config import Config
 from cnn import strategyCNN
 from lstm import strategyLSTM
+from cnn_post import strategyCNN_post
+from cnn_post2 import strategyCNN_post2
 import os
 
 # agentのモデルを知っていればエージェントの役職推定がうまくいくか
@@ -18,6 +20,10 @@ if __name__ == "__main__":
     config = Config()
     if config.TRAIN_FILE == "CNN":
         model = strategyCNN(config)
+    elif config.TRAIN_FILE == "cnn_post":
+        model = strategyCNN_post(config)
+    elif config.TRAIN_FILE == "cnn_post2":
+        model = strategyCNN_post2(config)
     else:
         model = strategyLSTM(config)
     os.makedirs(config.OUTPUT_PATH, exist_ok=True)

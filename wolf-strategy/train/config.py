@@ -2,17 +2,19 @@ class Config(object):
     def __init__(self):
         self.EPOCH = 10
         self.LOG_PATH = "../AIWolf-ver0.5.6/log/*/*"
-        self.OUTPUT_PATH = "result-lstm"
+        #self.OUTPUT_PATH = "result-dense"
         self.BATCH_SIZE = 128
         self.TRAIN_PAR_TEST = 0.8
         self.TEST_PAR_VALID = 0.5
         self.LEARNING_RATE = 0.008
-        self.DATA_PATH = "result-lstm/data"
+        #self.DATA_PATH = "result-dense/data"
         self.INIT_DATA = False
         self.IS_FINISH_TRAIN = False
-        self.TRAIN_FILE = "lstm"
-        self.NETWORK = "lstm"
+        self.TRAIN_FILE = "cnn_post2"
+        self.NETWORK = "DENSE"
         self.HIDDEN_UNITS = 300
+        self.OUTPUT_PATH = "result-" + self.TRAIN_FILE + "-" + self.NETWORK
+        self.DATA_PATH = self.OUTPUT_PATH + "/data"
 
     def output_config(self):
         text = "EPOCH: " + str(self.EPOCH) + "\n"

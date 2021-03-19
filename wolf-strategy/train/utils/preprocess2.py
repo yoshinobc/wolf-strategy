@@ -22,6 +22,8 @@ import numpy as np
 import os
 from . import splitText
 
+# lstm
+
 
 class preprocess2(object):
     def __init__(self):
